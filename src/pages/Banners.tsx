@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { bannerList, bannerCreate, bannerUpdate, bannerDelete } from '../api'
+import { bannerList, bannerCreate, bannerUpdate, bannerDelete, bannerAiGenerate } from '../api'
 import type { Banner } from '../types'
-import { Plus, Edit2, Trash2, Image } from 'lucide-react'
+import { Plus, Edit2, Trash2, Image, Sparkles } from 'lucide-react'
 
 export default function Banners() {
   const [banners, setBanners] = useState<Banner[]>([])
@@ -9,6 +9,8 @@ export default function Banners() {
   const [showForm, setShowForm] = useState(false)
   const [editBanner, setEditBanner] = useState<Banner | null>(null)
   const [form, setForm] = useState({ title: '', image_url: '', link_url: '', sort_order: 0, is_active: true })
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiPreview, setAiPreview] = useState<string | null>(null)
 
   useEffect(() => { loadData() }, [])
 
@@ -27,7 +29,27 @@ export default function Banners() {
       link_url: b?.link_url || '', sort_order: b?.sort_order || 0,
       is_active: b?.is_active ?? true
     })
+    setAiPreview(b?.image_url || null)
     setShowForm(true)
+  }
+
+  const handleAiGenerate = async () => {
+    if (!form.title) { alert('请先填写标题'); return }
+    setAiLoading(true)
+    try {
+      const res: any = await bannerAiGenerate(form.title, form.link_url || '')
+      const imageUrl = res.image_url || res.url || res.data?.image_url || ''
+      if (imageUrl) {
+        setAiPreview(imageUrl)
+        setForm(f => ({ ...f, image_url: imageUrl }))
+      } else {
+        alert('生成失败，请重试')
+      }
+    } catch (err: any) {
+      alert(err.message || 'AI生成失败')
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   const handleSave = async () => {
@@ -76,7 +98,7 @@ export default function Banners() {
 
       {showForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', borderRadius: 12, padding: 32, width: 480 }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 32, width: 520 }}>
             <h3 style={{ marginBottom: 20 }}>{editBanner ? '编辑轮播图' : '添加轮播图'}</h3>
             <div style={{ display: 'grid', gap: 12 }}>
               <div>
@@ -84,9 +106,24 @@ export default function Banners() {
                 <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid #ddd', borderRadius: 6, marginTop: 4, fontSize: 13 }} />
               </div>
               <div>
-                <label style={{ fontSize: 13, color: '#666' }}>图片URL</label>
-                <input value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid #ddd', borderRadius: 6, marginTop: 4, fontSize: 13 }} placeholder="https://..." />
+                <label style={{ fontSize: 13, color: '#666', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  图片URL
+                  <button onClick={handleAiGenerate} disabled={aiLoading || !form.title} style={{
+                    display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px',
+                    background: '#f5f7fa', border: '1px solid #ddd', borderRadius: 6,
+                    fontSize: 12, cursor: aiLoading || !form.title ? 'not-allowed' : 'pointer',
+                    color: '#667eea', marginLeft: 'auto'
+                  }}>
+                    <Sparkles size={12} /> {aiLoading ? '生成中...' : 'AI生成图片'}
+                  </button>
+                </label>
+                <input value={form.image_url} onChange={e => { setForm(f => ({ ...f, image_url: e.target.value })); setAiPreview(e.target.value || null) }} style={{ width: '100%', padding: '8px 12px', border: '1px solid #ddd', borderRadius: 6, marginTop: 4, fontSize: 13 }} placeholder="https://..." />
               </div>
+              {aiPreview && (
+                <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden', height: 160 }}>
+                  <img src={aiPreview} alt="预览" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setAiPreview(null)} />
+                </div>
+              )}
               <div>
                 <label style={{ fontSize: 13, color: '#666' }}>跳转链接（可选）</label>
                 <input value={form.link_url} onChange={e => setForm(f => ({ ...f, link_url: e.target.value }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid #ddd', borderRadius: 6, marginTop: 4, fontSize: 13 }} placeholder="https://..." />

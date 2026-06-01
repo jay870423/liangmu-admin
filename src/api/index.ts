@@ -95,10 +95,10 @@ export const bannerDelete = (id: number) =>
   api.delete(`/home/banners/${id}`)
 
 export const bannerAiGenerate = (banner_title: string, banner_desc: string) =>
-  api.get('/home/banners/ai/generate_image', { params: { banner_title, banner_desc }, timeout: 60000 })
+  api.post('/home/banners/ai/generate_image', { banner_title, banner_desc }, { timeout: 60000 })
 
 export const categoryAiGenerate = (category_name: string, category_type: string) =>
-  api.get('/home/categories/ai/generate_icon', { params: { category_name, category_type }, timeout: 60000 })
+  api.post('/home/categories/ai/generate_icon', { category_name, category_type }, { timeout: 60000 })
 
 // ============ 订单 ============
 export const orderList = (params?: { page?: number; page_size?: number; status?: string }) =>
