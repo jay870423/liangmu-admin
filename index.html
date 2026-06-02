@@ -417,8 +417,9 @@ async function renderProducts(kw){
 }
 async function openProductModal(id){
   const p=id?state.products.find(x=>x.id===id):null;
-  const cats=await api('/categories').catch(()=>({items:[]}));
-  const catOpts=(cats.items||[]).map(c=>`<option value="${c.id}" ${p&&p.category_id===c.id?'selected':''}>${c.name}</option>`).join('');
+  const cats=await api('/admin/categories/').catch(()=>({items:[]}));
+  const catItems=cats.items||cats.data?.items||[];
+  const catOpts=catItems.map(c=>`<option value="${c.id}" ${p&&p.category_id===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
   showModal(`${modalHeader(p?'编辑商品':'新增商品', '完善基础信息、商品图片和 AI 描述后保存')}
     <div class="modal-body">
       <div class="form-panel">
