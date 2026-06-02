@@ -109,6 +109,11 @@ textarea.input{resize:vertical;min-height:80px}
 .img-preview .change-btn{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;padding:4px 10px;border-radius:6px;cursor:pointer}
 .img-preview.has-img .hint{display:none}
 .img-preview.has-img{border-style:solid;border-color:var(--green)}
+.cat-icon-thumb{width:44px;height:44px;border-radius:12px;background:#f6faf4;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
+.cat-icon-thumb img{width:34px;height:34px;object-fit:contain;border-radius:0}
+.cat-icon-thumb .fallback{font-size:22px;color:var(--green)}
+.icon-url-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.icon-preview-panel{min-height:128px}
 
 /*Toast*/
 .toast{position:fixed;top:20px;right:20px;background:var(--white);border-radius:10px;padding:14px 20px;box-shadow:0 8px 30px rgba(0,0,0,.15);z-index:200;display:none;align-items:center;gap:10px;font-size:14px}
@@ -396,9 +401,22 @@ textarea.input{resize:vertical;min-height:80px}
     <div style="border-top:1px solid var(--border);padding-top:20px">
       <div class="form-item">
         <label>手动上传图标</label>
-        <div class="img-preview" id="catImgPreview" onclick="document.getElementById('catFileInput').click()">
+        <div class="img-preview icon-preview-panel" id="catImgPreview" onclick="document.getElementById('catFileInput').click()">
           <div class="hint">点击上传图标（支持 JPG/PNG/SVG）</div>
           <input type="file" id="catFileInput" accept="image/jpeg,image/png,image/svg+xml" style="display:none" onchange="handleCatFileSelect(this)">
+        </div>
+      </div>
+
+      <div class="icon-url-row">
+        <div class="form-item">
+          <label>默认图标</label>
+          <select class="input" id="catDefaultIcon" onchange="chooseDefaultCatIcon(this.value)">
+            <option value="">请选择默认图标</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>当前图标 URL</label>
+          <input class="input" id="catIconUrl" placeholder="/assets/icons/huanghuali.svg" oninput="setCatIcon(this.value)">
         </div>
       </div>
 
@@ -433,8 +451,27 @@ const BASE = 'https://api.zhouyuaninfo.com.cn/api/v1';
 let token = localStorage.getItem('admin_token') || '';
 let currentBannerImg = '';
 let currentCatIcon = '';
+const DEFAULT_CATEGORY_ICONS = [
+  {name:'海南黄花梨', url:'/assets/icons/huanghuali.svg'},
+  {name:'海南沉香', url:'/assets/icons/chenxiang.svg'},
+  {name:'木制工艺品', url:'/assets/icons/woodwork.svg'},
+  {name:'紫檀手串', url:'/assets/icons/zitan.svg'},
+  {name:'黄花梨旧版', url:'/assets/icons/huanghuali.png'},
+  {name:'沉香旧版', url:'/assets/icons/chenxiang.png'},
+  {name:'木工旧版', url:'/assets/icons/woodwork.png'},
+];
 
 // ============ 工具函数 ============
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function categoryIconHtml(url, name='') {
+  const label = esc((name || '分类').slice(0, 1));
+  if (!url) return `<span class="cat-icon-thumb"><span class="fallback">${label}</span></span>`;
+  return `<span class="cat-icon-thumb"><img src="${esc(url)}" alt="${esc(name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fallback" style="display:none">${label}</span></span>`;
+}
+
 function toast(msg, type='success') {
   const t = document.getElementById('toast');
   const icons = {success:'✅', error:'❌', info:'ℹ️'};
@@ -574,8 +611,8 @@ function loadCategories() {
     tbody.innerHTML = items.map(c => `
       <tr>
         <td>${c.sort_order || 0}</td>
-        <td><img src="${c.icon_url || c.icon || ''}" alt="" style="max-width:40px;max-height:40px"></td>
-        <td>${c.name}</td>
+        <td>${categoryIconHtml(c.icon_url || c.icon || '', c.name)}</td>
+        <td>${esc(c.name)}</td>
         <td>${c.is_active ? '✅' : '❌'}</td>
         <td>
           <button class="btn btn-outline btn-sm" onclick="editCategory('${c.id}')">编辑</button>
@@ -743,8 +780,8 @@ function openCategoryModal(id) {
   document.getElementById('catName').value = '';
   document.getElementById('catSort').value = '0';
   document.getElementById('catActive').checked = true;
-  currentCatIcon = '';
-  resetCatPreview();
+  populateDefaultIconSelect('');
+  setCatIcon('');
   document.getElementById('aiCatResult').className = 'ai-result';
   document.getElementById('aiCatResult').innerHTML = '<div class="hint">👆 点击下方按钮生成分类图标</div>';
   document.getElementById('aiCatName').value = '';
@@ -765,14 +802,50 @@ function editCategory(id) {
     document.getElementById('catSort').value = c.sort_order || 0;
     document.getElementById('catActive').checked = c.is_active !== false;
     currentCatIcon = c.icon_url || c.icon || '';
-    if (currentCatIcon) {
-      document.getElementById('catImgPreview').innerHTML = `
-        <img src="${currentCatIcon}" alt="">
-        <div class="change-btn">更换图标</div>
-      `;
-      document.getElementById('catImgPreview').classList.add('has-img');
-    }
+    setCatIcon(currentCatIcon);
   });
+}
+
+function populateDefaultIconSelect(selected='') {
+  const select = document.getElementById('catDefaultIcon');
+  if (!select) return;
+  select.innerHTML = '<option value="">请选择默认图标</option>' +
+    DEFAULT_CATEGORY_ICONS.map(i => `<option value="${esc(i.url)}" ${i.url === selected ? 'selected' : ''}>${esc(i.name)}</option>`).join('');
+}
+
+function chooseDefaultCatIcon(url) {
+  if (!url) return;
+  setCatIcon(url);
+  const matched = DEFAULT_CATEGORY_ICONS.find(i => i.url === url);
+  if (matched && !document.getElementById('catName').value.trim()) {
+    document.getElementById('catName').value = matched.name.replace('旧版', '');
+    document.getElementById('aiCatName').value = matched.name.replace('旧版', '');
+  }
+}
+
+function renderCatPreview() {
+  const preview = document.getElementById('catImgPreview');
+  if (!preview) return;
+  if (currentCatIcon) {
+    preview.innerHTML = `
+      <img src="${esc(currentCatIcon)}" alt="分类图标" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="cat-icon-thumb" style="display:none;width:64px;height:64px"><span class="fallback">图</span></div>
+      <div class="change-btn">更换图标</div>
+      <input type="file" id="catFileInput" accept="image/jpeg,image/png,image/svg+xml,image/webp" style="display:none" onchange="handleCatFileSelect(this)">
+    `;
+    preview.classList.add('has-img');
+  } else {
+    resetCatPreview();
+  }
+}
+
+function setCatIcon(url) {
+  currentCatIcon = (url || '').trim();
+  const input = document.getElementById('catIconUrl');
+  if (input && input.value !== currentCatIcon) input.value = currentCatIcon;
+  const select = document.getElementById('catDefaultIcon');
+  if (select) select.value = DEFAULT_CATEGORY_ICONS.some(i => i.url === currentCatIcon) ? currentCatIcon : '';
+  renderCatPreview();
 }
 
 function handleCatFileSelect(input) {
@@ -783,12 +856,7 @@ function handleCatFileSelect(input) {
   document.getElementById('catImgPreview').classList.remove('has-img');
   apiForm('/home/categories/upload', file).then(r => {
     if (r.url) {
-      currentCatIcon = r.url.startsWith('http') ? r.url : (BASE.replace('/api/v1','') + r.url);
-      document.getElementById('catImgPreview').innerHTML = `
-        <img src="${currentCatIcon}" alt="">
-        <div class="change-btn">更换图标</div>
-      `;
-      document.getElementById('catImgPreview').classList.add('has-img');
+      setCatIcon(r.url.startsWith('http') ? r.url : r.url);
       toast('图标上传成功');
     } else {
       toast('上传失败：' + (r.detail || '未知错误'), 'error');
@@ -798,8 +866,8 @@ function handleCatFileSelect(input) {
 
 function resetCatPreview() {
   document.getElementById('catImgPreview').innerHTML = `
-    <div class="hint">点击上传图标（支持 JPG/PNG/SVG）</div>
-    <input type="file" id="catFileInput" accept="image/jpeg,image/png,image/svg+xml" style="display:none" onchange="handleCatFileSelect(this)">
+    <div class="hint">点击上传图标（支持 JPG/PNG/SVG/WebP），也可在下方选择默认图标</div>
+    <input type="file" id="catFileInput" accept="image/jpeg,image/png,image/svg+xml,image/webp" style="display:none" onchange="handleCatFileSelect(this)">
   `;
   document.getElementById('catImgPreview').classList.remove('has-img');
   document.getElementById('catFileInput').onchange = function() { handleCatFileSelect(this); };
@@ -818,14 +886,9 @@ async function generateCategoryIcon() {
   try {
     const r = await api('GET', `/home/categories/ai/generate_icon?category_name=${encodeURIComponent(name)}&category_type=${encodeURIComponent(type)}`);
     if (r.icon_url) {
-      currentCatIcon = r.icon_url;
-      result.innerHTML = `<img src="${r.icon_url}" alt="AI生成图标">`;
+      setCatIcon(r.icon_url);
+      result.innerHTML = `<img src="${esc(r.icon_url)}" alt="AI生成图标">`;
       result.className = 'ai-result has-img';
-      document.getElementById('catImgPreview').innerHTML = `
-        <img src="${r.icon_url}" alt="">
-        <div class="change-btn">更换图标</div>
-      `;
-      document.getElementById('catImgPreview').classList.add('has-img');
       document.getElementById('catName').value = name;
       toast('分类图标生成成功！');
     } else {
@@ -836,6 +899,44 @@ async function generateCategoryIcon() {
   }
   btn.disabled = false;
   btn.innerHTML = '🎨 生成分类图标';
+}
+
+function saveCategory() {
+  const name = document.getElementById('catName').value.trim();
+  if (!name) { toast('请输入分类名称', 'error'); return; }
+  const iconUrl = document.getElementById('catIconUrl').value.trim() || currentCatIcon;
+  const payload = {
+    name,
+    icon_url: iconUrl,
+    sort_order: parseInt(document.getElementById('catSort').value) || 0,
+    is_active: document.getElementById('catActive').checked,
+  };
+  const id = document.getElementById('catEditId').value;
+  const method = id ? 'PUT' : 'POST';
+  const path = id ? `/home/categories/${id}` : '/home/categories';
+  api(method, path, payload).then(r => {
+    if (r.detail || r.error || r.message?.includes('失败')) {
+      toast('保存失败：' + (r.detail || r.error || r.message), 'error');
+      return;
+    }
+    toast(id ? '分类更新成功' : '分类创建成功');
+    closeCategoryModal();
+    loadCategories();
+    loadStats();
+  }).catch(() => toast('保存失败，请稍后重试', 'error'));
+}
+
+function delCategory(id) {
+  if (!confirm('确认删除这个分类？')) return;
+  api('DELETE', `/home/categories/${id}`).then(r => {
+    if (r.detail || r.error || r.message?.includes('无法删除')) {
+      toast('删除失败：' + (r.detail || r.error || r.message), 'error');
+      return;
+    }
+    toast('删除成功');
+    loadCategories();
+    loadStats();
+  }).catch(() => toast('删除失败，请稍后重试', 'error'));
 }
 
 // ============ 初始化加载 ============

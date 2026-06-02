@@ -122,6 +122,12 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 .image-tile img{width:100%;height:100%;object-fit:cover;display:block}
 .image-tile button{position:absolute;top:6px;right:6px;width:24px;height:24px;border:none;border-radius:50%;background:rgba(15,23,42,.78);color:#fff;cursor:pointer;line-height:24px;text-align:center}
 .image-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--text2);font-size:13px;min-height:88px}
+.category-icon-thumb{width:44px;height:44px;border-radius:12px;background:#f6faf4;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
+.category-icon-thumb img{width:34px;height:34px;object-fit:contain}
+.category-icon-thumb .fallback{font-size:22px;color:var(--green);font-weight:700}
+.category-icon-editor{display:grid;grid-template-columns:140px minmax(0,1fr);gap:16px;align-items:start}
+.category-icon-preview{height:140px;border:1px dashed var(--border);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.category-icon-preview img{width:88px;height:88px;object-fit:contain}
 .tool-stack{display:flex;flex-direction:column;gap:10px}
 .tool-card{border:1px solid var(--border);background:#fff;border-radius:10px;padding:12px}
 .tool-card h4{font-size:13px;margin-bottom:8px;color:var(--text)}
@@ -171,7 +177,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 @media(max-width:1200px){.stat-grid{grid-template-columns:repeat(2,1fr)}.image-workspace{grid-template-columns:1fr}}
 @media(max-width:768px){
   .sidebar{display:none}.main{margin-left:0}.content{padding:16px}.stat-grid{grid-template-columns:1fr}
-  .form-row,.detail-grid{grid-template-columns:1fr}.modal-overlay{padding:10px;align-items:flex-start}.modal{max-height:96vh}
+  .form-row,.detail-grid,.category-icon-editor{grid-template-columns:1fr}.modal-overlay{padding:10px;align-items:flex-start}.modal{max-height:96vh}
   .table th,.table td{padding:10px 12px}.card{padding:16px}
 }
 </style>
@@ -231,6 +237,15 @@ const API = 'https://api.zhouyuaninfo.com.cn/api/v1'
 let TOKEN = localStorage.getItem('adminToken') || ''
 let CUR_PAGE = 'dashboard'
 let state = { products: [], orders: [], users: [], coupons: [], banners: [] }
+const DEFAULT_CATEGORY_ICONS=[
+  {name:'海南黄花梨',url:'/assets/icons/huanghuali.svg'},
+  {name:'海南沉香',url:'/assets/icons/chenxiang.svg'},
+  {name:'木制工艺品',url:'/assets/icons/woodwork.svg'},
+  {name:'紫檀手串',url:'/assets/icons/zitan.svg'},
+  {name:'黄花梨旧版',url:'/assets/icons/huanghuali.png'},
+  {name:'沉香旧版',url:'/assets/icons/chenxiang.png'},
+  {name:'木工旧版',url:'/assets/icons/woodwork.png'}
+];
 
 // ---------- 工具函数 ----------
 function $(s){return document.querySelector(s)}
@@ -266,6 +281,11 @@ function modalHeader(title,subtitle=''){
 }
 function emptyRow(cols, icon, text, desc=''){
   return `<tr><td colspan="${cols}"><div class="empty compact"><div class="empty-icon">${icon}</div><div>${text}</div>${desc?`<div style="font-size:12px;margin-top:8px">${desc}</div>`:''}</div></td></tr>`;
+}
+function categoryIconCell(url,name=''){
+  const label=esc((name||'分').slice(0,1));
+  if(!url)return`<span class="category-icon-thumb"><span class="fallback">${label}</span></span>`;
+  return`<span class="category-icon-thumb"><img src="${esc(url)}" alt="${esc(name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fallback" style="display:none">${label}</span></span>`;
 }
 function setNote(sel,type,text){
   const el=$(sel);if(!el)return;
@@ -551,7 +571,7 @@ async function renderCategories(kw){
         ${rows.map(c=>`<tr>
           <td>${c.sort_order}</td>
           <td style="font-weight:600">${c.name}</td>
-          <td>${c.icon_url?'<img src="'+c.icon_url+'" style="width:32px;height:32px;object-fit:contain">':'<span style="color:var(--text2)">无</span>'}</td>
+          <td>${categoryIconCell(c.icon_url,c.name)}</td>
           <td>${c.is_active?badge('green','启用'):badge('gray','禁用')}</td>
           <td>
             <button class="btn btn-secondary btn-sm" onclick="openCategoryModal('${c.id}')">编辑</button>
@@ -566,6 +586,7 @@ async function renderCategories(kw){
 }
 async function openCategoryModal(id){
   const c=id?state.categories.find(x=>x.id===id):null;
+  const iconOpts=DEFAULT_CATEGORY_ICONS.map(i=>`<option value="${esc(i.url)}" ${c?.icon_url===i.url?'selected':''}>${esc(i.name)}</option>`).join('');
   showModal(`${modalHeader(c?'编辑分类':'新建分类','分类会展示在小程序首页和商品筛选中')}
     <div class="modal-body">
       <div class="form-panel">
@@ -573,14 +594,70 @@ async function openCategoryModal(id){
           <div class="form-group"><label>分类名称 *</label><input id="fc-name" value="${esc(c?.name||'')}" placeholder="如：海南黄花梨"></div>
           <div class="form-group"><label>排序值</label><input id="fc-sort" type="number" value="${c?.sort_order||0}"><div class="form-help">数字越小越靠前。</div></div>
         </div>
-        <div class="form-group"><label>图标 URL</label><input id="fc-icon" value="${esc(c?.icon_url||'')}" placeholder="/assets/icons/huanghuali.png"></div>
         <div class="form-group compact"><label>状态</label><div class="switch-row">
           <input id="fc-active" type="checkbox" ${c?.is_active!==false?'checked':''}><span>启用该分类</span>
         </div></div>
       </div>
+      <div class="form-panel soft">
+        <div class="section-title">图标素材</div>
+        <div class="category-icon-editor">
+          <div>
+            <div id="fc-icon-preview" class="category-icon-preview"></div>
+            <div id="fc-icon-note" class="status-note"></div>
+          </div>
+          <div class="tool-stack">
+            <div class="form-row">
+              <div class="form-group"><label>默认图标</label><select id="fc-default-icon" onchange="chooseCategoryDefaultIcon(this.value)"><option value="">请选择默认图标</option>${iconOpts}</select></div>
+              <div class="form-group"><label>AI 风格描述</label><input id="fc-icon-style" placeholder="如：扁平、国风、木纹质感"></div>
+            </div>
+            <div class="form-group"><label>图标 URL</label><input id="fc-icon" value="${esc(c?.icon_url||'')}" placeholder="/assets/icons/huanghuali.svg" oninput="setCategoryIcon(this.value)"></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <label class="btn btn-secondary" style="cursor:pointer">上传图标<input type="file" accept="image/jpeg,image/png,image/svg+xml,image/webp" style="display:none" onchange="uploadCategoryIcon(this.files[0])"></label>
+              <button class="btn btn-primary" onclick="genCategoryIcon()">AI 生成图标</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">取消</button>
     <button class="btn btn-primary" onclick="saveCategory('${id||''}')">保存分类</button></div>`, 'modal-md');
+  setCategoryIcon(c?.icon_url||'');
+}
+function setCategoryIcon(url){
+  const val=(url||'').trim();
+  const input=$('#fc-icon');if(input&&input.value!==val)input.value=val;
+  const select=$('#fc-default-icon');if(select)select.value=DEFAULT_CATEGORY_ICONS.some(i=>i.url===val)?val:'';
+  const preview=$('#fc-icon-preview');if(!preview)return;
+  preview.innerHTML=val?`<img src="${esc(val)}" alt="分类图标" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="category-icon-thumb" style="width:72px;height:72px;display:none"><span class="fallback">图</span></span>`:`<div style="color:var(--text2);font-size:13px;text-align:center">选择、上传或 AI 生成分类图标</div>`;
+}
+function chooseCategoryDefaultIcon(url){
+  if(!url)return;
+  setCategoryIcon(url);
+  const matched=DEFAULT_CATEGORY_ICONS.find(i=>i.url===url);
+  if(matched&&!$('#fc-name').value.trim())$('#fc-name').value=matched.name.replace('旧版','');
+}
+async function uploadCategoryIcon(file){
+  if(!file)return;
+  setNote('#fc-icon-note','info','图标上传中...');
+  try{
+    const fd=new FormData();fd.append('file',file);
+    const d=await api('/home/categories/upload',{method:'POST',body:fd});
+    if(!d.url)throw new Error(d.detail||d.message||'上传失败');
+    setCategoryIcon(d.url);
+    setNote('#fc-icon-note','ok','图标已上传并填入。');
+  }catch(e){setNote('#fc-icon-note','err','上传失败：'+e.message);}
+}
+async function genCategoryIcon(){
+  const name=$('#fc-name').value.trim();if(!name){alert('请先填写分类名称');return;}
+  const style=$('#fc-icon-style').value.trim();
+  setNote('#fc-icon-note','info','AI 正在生成分类图标，请稍候...');
+  try{
+    const r=await api(`/home/categories/ai/generate_icon?category_name=${encodeURIComponent(name)}&category_type=${encodeURIComponent(style)}`);
+    if(r.error)throw new Error(r.error);
+    if(!r.icon_url)throw new Error('生成失败，请重试');
+    setCategoryIcon(r.icon_url);
+    setNote('#fc-icon-note','ok','AI 图标已生成并填入图标 URL。');
+  }catch(e){setNote('#fc-icon-note','err','生成失败：'+e.message);}
 }
 async function saveCategory(id){
   if(!$('#fc-name').value.trim()){alert('请填写分类名称');return;}
