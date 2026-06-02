@@ -508,8 +508,16 @@ function showSection(name) {
 }
 
 function logout() {
+  token = '';
   localStorage.removeItem('admin_token');
-  location.reload();
+  localStorage.removeItem('adminToken');
+  localStorage.removeItem('adminUser');
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginUsername').focus();
+  toast('已退出登录', 'info');
 }
 
 // ============ 数据加载 ============
