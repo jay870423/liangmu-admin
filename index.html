@@ -951,6 +951,16 @@ function viewOrder(id){
         <div class="detail-item"><div class="detail-label">下单时间</div><div class="detail-value">${fmtDateTime(o.created_at)}</div></div>
       </div>
       <div class="form-panel">
+        <div class="section-title">购买用户</div>
+        <div style="line-height:1.8">
+          <div><strong>用户昵称：</strong>${esc(o.user_nickname||'微信用户')}</div>
+          <div><strong>用户手机号：</strong>${esc(o.user_phone||'未绑定')}</div>
+          <div><strong>会员等级：</strong>${esc(o.user_member_level||'-')}</div>
+          <div><strong>用户ID：</strong><span style="font-size:12px;color:var(--text2)">${esc(o.user_id||'-')}</span></div>
+          <div><strong>OpenID：</strong><span style="font-size:12px;color:var(--text2)">${esc(o.user_openid||'-')}</span></div>
+        </div>
+      </div>
+      <div class="form-panel">
         <div class="section-title">收货信息</div>
         <div style="line-height:1.8">
           <div><strong>收货人：</strong>${esc(o.receiver_name||'-')} ${esc(o.receiver_phone||'')}</div>
