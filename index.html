@@ -128,6 +128,11 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 .category-icon-editor{display:grid;grid-template-columns:140px minmax(0,1fr);gap:16px;align-items:start}
 .category-icon-preview{height:140px;border:1px dashed var(--border);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .category-icon-preview img{width:88px;height:88px;object-fit:contain}
+.link-target-box{border:1px solid var(--border);background:#f8fafc;border-radius:10px;padding:12px;margin-top:10px}
+.link-target-box .form-group{margin-bottom:0}
+.link-target-hint{font-size:12px;color:var(--text2);line-height:1.6}
+.link-target-preview{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px;border-radius:8px;background:#fff;border:1px solid var(--border);font-size:13px;color:var(--text2)}
+.link-target-preview strong{color:var(--text)}
 .tool-stack{display:flex;flex-direction:column;gap:10px}
 .tool-card{border:1px solid var(--border);background:#fff;border-radius:10px;padding:12px}
 .tool-card h4{font-size:13px;margin-bottom:8px;color:var(--text)}
@@ -722,6 +727,12 @@ async function renderBanners(kw){
 }
 async function openBannerModal(id){
   const b=id?state.banners.find(x=>x.id===id):null;
+  const [products,categories]=await Promise.all([
+    api('/admin/products/?page=1&page_size=100').catch(()=>({items:[]})),
+    api('/admin/categories/').catch(()=>({items:[]}))
+  ]);
+  const productItems=products.items||[];
+  const categoryItems=categories.items||[];
   showModal(`${modalHeader(b?'编辑轮播图':'新增轮播图','支持上传图片或 AI 生成首页横幅')}
     <div class="modal-body">
       <div class="form-panel">
@@ -729,9 +740,16 @@ async function openBannerModal(id){
           <div class="form-group"><label>标题 *</label><input id="fb-title" value="${esc(b?.title||'')}" placeholder="如：海南黄花梨专场"></div>
           <div class="form-group"><label>排序值</label><input id="fb-order" type="number" value="${b?.sort_order||0}"></div>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label>链接类型</label><select id="fb-type"><option value="none" ${b?.link_type==='none'?'selected':''}>无链接</option><option value="product" ${b?.link_type==='product'?'selected':''}>商品</option><option value="category" ${b?.link_type==='category'?'selected':''}>分类</option><option value="url" ${b?.link_type==='url'?'selected':''}>外部链接</option></select></div>
-          <div class="form-group"><label>链接目标</label><input id="fb-val" value="${esc(b?.link_value||'')}" placeholder="商品ID / 分类ID / URL"></div>
+        <div class="form-group">
+          <label>点击轮播图后跳转</label>
+          <select id="fb-type" onchange="renderBannerLinkTarget()">
+            <option value="none" ${!b?.link_type||b?.link_type==='none'?'selected':''}>不跳转，仅展示图片</option>
+            <option value="product" ${b?.link_type==='product'?'selected':''}>跳转到商品详情</option>
+            <option value="category" ${b?.link_type==='category'?'selected':''}>跳转到分类商品列表</option>
+            <option value="url" ${b?.link_type==='url'?'selected':''}>跳转到外部链接</option>
+          </select>
+          <input type="hidden" id="fb-val" value="${esc(b?.link_value||'')}">
+          <div id="fb-link-target" class="link-target-box"></div>
         </div>
         <div class="form-group compact"><label>状态</label><div class="switch-row"><input id="fb-active" type="checkbox" ${b?.is_active!==false?'checked':''}><span>启用该轮播图</span></div></div>
       </div>
@@ -754,6 +772,51 @@ async function openBannerModal(id){
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">取消</button>
     <button class="btn btn-primary" onclick="saveBanner('${id||''}')">保存轮播图</button></div>`, 'modal-lg');
+  window.bannerProductOptions=productItems;
+  window.bannerCategoryOptions=categoryItems;
+  renderBannerLinkTarget();
+}
+function bannerOptionLabel(item,type){
+  if(type==='product')return `${item.name||'未命名商品'} ｜ ¥${item.price??0} ｜ 库存 ${item.stock??0}`;
+  return `${item.name||'未命名分类'} ｜ 排序 ${item.sort_order??0}`;
+}
+function renderBannerLinkTarget(){
+  const type=$('#fb-type')?.value||'none';
+  const current=$('#fb-val')?.value||'';
+  const box=$('#fb-link-target');if(!box)return;
+  if(type==='none'){
+    $('#fb-val').value='';
+    box.innerHTML='<div class="link-target-hint">用户点击这张轮播图时不会跳转，适合纯展示类活动图。</div>';
+    return;
+  }
+  if(type==='product'){
+    const items=window.bannerProductOptions||[];
+    box.innerHTML=`<div class="form-group"><label>选择商品</label><select id="fb-product-target" onchange="setBannerLinkValue(this.value)"><option value="">请选择商品</option>${items.map(p=>`<option value="${p.id}" ${current===p.id?'selected':''}>${esc(bannerOptionLabel(p,'product'))}</option>`).join('')}</select><div class="form-help">保存后，小程序可根据商品 ID 跳转到对应商品详情。</div></div>${items.length?'':'<div class="link-target-hint">暂无可选商品，请先在商品管理中新增商品。</div>'}`;
+    if(!items.some(p=>p.id===current))$('#fb-val').value='';
+    updateBannerLinkPreview();
+    return;
+  }
+  if(type==='category'){
+    const items=window.bannerCategoryOptions||[];
+    box.innerHTML=`<div class="form-group"><label>选择分类</label><select id="fb-category-target" onchange="setBannerLinkValue(this.value)"><option value="">请选择分类</option>${items.map(c=>`<option value="${c.id}" ${current===c.id?'selected':''}>${esc(bannerOptionLabel(c,'category'))}</option>`).join('')}</select><div class="form-help">保存后，小程序可根据分类 ID 展示该分类下的商品。</div></div>${items.length?'':'<div class="link-target-hint">暂无可选分类，请先在分类管理中新增分类。</div>'}`;
+    if(!items.some(c=>c.id===current))$('#fb-val').value='';
+    updateBannerLinkPreview();
+    return;
+  }
+  box.innerHTML=`<div class="form-group"><label>外部链接 URL</label><input id="fb-url-target" value="${esc(current)}" placeholder="https://example.com/page" oninput="setBannerLinkValue(this.value)"><div class="form-help">请填写以 http:// 或 https:// 开头的完整地址。</div></div>`;
+}
+function setBannerLinkValue(value){
+  $('#fb-val').value=(value||'').trim();
+  updateBannerLinkPreview();
+}
+function updateBannerLinkPreview(){
+  const type=$('#fb-type')?.value;
+  const val=$('#fb-val')?.value;
+  const box=$('#fb-link-target');if(!box||!type||!val||type==='url')return;
+  const items=type==='product'?(window.bannerProductOptions||[]):(window.bannerCategoryOptions||[]);
+  const found=items.find(x=>x.id===val);
+  const old=box.querySelector('.link-target-preview');if(old)old.remove();
+  if(found)box.insertAdjacentHTML('beforeend',`<div class="link-target-preview">已选择：<strong>${esc(found.name||'未命名')}</strong><span>${esc(val)}</span></div>`);
 }
 function previewBannerImage(){
   const img=$('#fb-preview');if(img)img.src=$('#fb-img').value||'/assets/placeholder.jpg';
@@ -786,8 +849,12 @@ async function genBannerCopy(){
 }
 async function saveBanner(id){
   if(!$('#fb-title').value.trim()){alert('请填写轮播图标题');return;}
+  const linkType=$('#fb-type').value;
+  const linkValue=$('#fb-val').value.trim();
+  if((linkType==='product'||linkType==='category')&&!linkValue){alert(linkType==='product'?'请选择要跳转的商品':'请选择要跳转的分类');return;}
+  if(linkType==='url'&&linkValue&&!/^https?:\/\//i.test(linkValue)){alert('外部链接请填写以 http:// 或 https:// 开头的完整地址');return;}
   const payload={title:$('#fb-title').value,link_type:$('#fb-type').value,
-    link_value:$('#fb-val').value,sort_order:parseInt($('#fb-order').value)||0,
+    link_value:linkValue,sort_order:parseInt($('#fb-order').value)||0,
     image_url:$('#fb-img').value,is_active:$('#fb-active').checked};
   const method=id?'PUT':'POST';
   const path=id?`/admin/banners/${id}`:'/admin/banners/';
