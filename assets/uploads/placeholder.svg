@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Image placeholder">
+  <defs>
+    <linearGradient id="bg" x1="24" y1="18" x2="216" y2="162" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#edf5ed"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="72" y1="56" x2="160" y2="132" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d99b51"/>
+      <stop offset="1" stop-color="#6a3519"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="180" rx="18" fill="url(#bg)"/>
+  <rect x="18" y="18" width="204" height="144" rx="14" fill="none" stroke="#d6e2d6" stroke-width="2"/>
+  <path d="M78 128c20-30 59-36 83-12-17 19-61 25-83 12Z" fill="url(#wood)" opacity=".92"/>
+  <path d="M88 123c18-12 42-16 64-7" fill="none" stroke="#fff1c7" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+  <path d="M118 58c-18 14 10 25-10 46" fill="none" stroke="#2d5a27" stroke-width="10" stroke-linecap="round"/>
+  <path d="M101 68c-18-5-34 6-38 25 19 4 35-6 38-25Z" fill="#4a7c4f"/>
+  <text x="120" y="151" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#64748b">Image pending</text>
+</svg>

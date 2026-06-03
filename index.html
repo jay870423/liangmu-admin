@@ -251,6 +251,7 @@ const DEFAULT_CATEGORY_ICONS=[
   {name:'沉香旧版',url:'/assets/icons/chenxiang.png'},
   {name:'木工旧版',url:'/assets/icons/woodwork.png'}
 ];
+const PLACEHOLDER_IMAGE='/assets/uploads/placeholder.svg';
 
 // ---------- 工具函数 ----------
 function $(s){return document.querySelector(s)}
@@ -397,7 +398,7 @@ async function renderProducts(kw){
       <thead><tr><th>商品</th><th>分类</th><th>价格</th><th>库存</th><th>销量</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>
         ${state.products.map(p=>`<tr>
-          <td><div style="display:flex;align-items:center;gap:10px"><img src="${(p.images||[''])[0]||'/assets/default.jpg'}" onerror="this.src='/assets/placeholder.jpg'" style="width:48px;height:48px;border-radius:8px;object-fit:cover"><div><div style="font-weight:500">${p.name}</div><div style="color:var(--text2);font-size:12px">${p.subtitle||'-'}</div></div></div></td>
+          <td><div style="display:flex;align-items:center;gap:10px"><img src="${(p.images||[''])[0]||PLACEHOLDER_IMAGE}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:48px;height:48px;border-radius:8px;object-fit:cover"><div><div style="font-weight:500">${p.name}</div><div style="color:var(--text2);font-size:12px">${p.subtitle||'-'}</div></div></div></td>
           <td>${p.category_name||'-'}</td>
           <td><span style="color:var(--red);font-weight:600">¥${p.price}</span>${p.original_price>p.price?`<span style="text-decoration:line-through;color:var(--text2);font-size:12px;margin-left:4px">¥${p.original_price}</span>`:''}</td>
           <td><span style="color:${p.stock<10?'var(--red)':'inherit'}">${p.stock}</span></td>
@@ -532,7 +533,7 @@ function setFpImages(imgs){
   const grid=$('#fp-img-grid');if(!grid)return;
   grid.innerHTML=imgs.length===0?'<div class="image-empty">暂无图片，使用右侧工具添加</div>':
     imgs.map((img,i)=>`<div class="image-tile" id="fp-img-wrap-${i}">
-      <img src="${esc(img)}" onerror="this.src='/assets/placeholder.jpg'">
+      <img src="${esc(img)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE">
       <button onclick="removeFpImg(${i})" title="删除">×</button>
     </div>`).join('');
 }
@@ -709,7 +710,7 @@ async function renderBanners(kw){
       <thead><tr><th>图片</th><th>标题</th><th>链接类型</th><th>排序</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>
         ${rows.map(b=>`<tr>
-          <td><img src="${esc(b.image_url||'')}" onerror="this.src='/assets/placeholder.jpg'" style="width:120px;height:60px;object-fit:cover;border-radius:6px"></td>
+          <td><img src="${esc(b.image_url||PLACEHOLDER_IMAGE)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:120px;height:60px;object-fit:cover;border-radius:6px"></td>
           <td>${esc(b.title)}</td>
           <td>${b.link_type}</td>
           <td>${b.sort_order}</td>
@@ -758,7 +759,7 @@ async function openBannerModal(id){
         <div class="form-group"><label>图片 URL</label><input id="fb-img" value="${esc(b?.image_url||'')}" placeholder="/assets/banners/xxx.jpg" oninput="previewBannerImage()"></div>
         <div style="display:grid;grid-template-columns:1fr 240px;gap:16px;align-items:start">
           <div style="border:1px solid var(--border);border-radius:10px;background:#fff;min-height:150px;display:flex;align-items:center;justify-content:center;overflow:hidden">
-            <img id="fb-preview" src="${esc(b?.image_url||'/assets/placeholder.jpg')}" onerror="this.src='/assets/placeholder.jpg'" style="width:100%;height:180px;object-fit:cover">
+            <img id="fb-preview" src="${esc(b?.image_url||PLACEHOLDER_IMAGE)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:100%;height:180px;object-fit:cover">
           </div>
           <div class="tool-stack">
             <label class="btn btn-secondary" style="justify-content:center;cursor:pointer">上传轮播图<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadBannerImage(this.files[0])"></label>
@@ -819,7 +820,7 @@ function updateBannerLinkPreview(){
   if(found)box.insertAdjacentHTML('beforeend',`<div class="link-target-preview">已选择：<strong>${esc(found.name||'未命名')}</strong><span>${esc(val)}</span></div>`);
 }
 function previewBannerImage(){
-  const img=$('#fb-preview');if(img)img.src=$('#fb-img').value||'/assets/placeholder.jpg';
+  const img=$('#fb-preview');if(img)img.src=$('#fb-img').value||PLACEHOLDER_IMAGE;
 }
 async function uploadBannerImage(file){
   if(!file)return;
