@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
@@ -267,6 +267,38 @@ async function api(path, opts={}){
   if(!r.ok)throw new Error(data.detail||data.message||`请求失败（${r.status}）`);
   return data;
 }
+async function streamText(path, opts={}, onUpdate=()=>{}){
+  const headers={...(opts.headers||{}),'Authorization':`Bearer ${TOKEN}`};
+  if(!(opts.body instanceof FormData))headers['Content-Type']='application/json';
+  const r=await fetch(API+path,{...opts,headers});
+  if(!r.ok){
+    const text=await r.text().catch(()=>r.statusText||'');
+    throw new Error(text||`Request failed: ${r.status}`);
+  }
+  if(!r.body){
+    const text=await r.text();
+    onUpdate(text);
+    return text;
+  }
+  const reader=r.body.getReader();
+  const decoder=new TextDecoder('utf-8');
+  let text='';
+  while(true){
+    const {value,done}=await reader.read();
+    if(done)break;
+    const chunk=decoder.decode(value,{stream:true});
+    if(chunk){
+      text+=chunk;
+      onUpdate(text,chunk);
+    }
+  }
+  const tail=decoder.decode();
+  if(tail){
+    text+=tail;
+    onUpdate(text,tail);
+  }
+  return text;
+}
 function showModal(html, size=''){
   $('#modalRoot').innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal ${size}">${html}</div></div>`
 }
@@ -373,10 +405,15 @@ async function renderDashboard(){
 }
 async function runAIAnalyze(){
   const el=$('#aiResult');
-  el.className='ai-result loading';el.textContent='AI 正在分析数据，请稍候...';
-  const d=await api('/admin/stats');
-  const result=await api('/admin/ai/analyze?type=sales&data='+encodeURIComponent(JSON.stringify(d)));
-  el.className='ai-result';el.textContent=result.analysis||result.message||'分析完毕';
+  el.className='ai-result loading';el.textContent='AI streaming...';
+  try{
+    const d=await api('/admin/stats');
+    const text=await streamText('/admin/ai/analyze/stream?type=sales&data='+encodeURIComponent(JSON.stringify(d)),{},t=>{
+      el.className='ai-result loading';
+      el.textContent=t||'AI streaming...';
+    });
+    el.className='ai-result';el.textContent=text||'Done';
+  }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
 }
 
 // ========== 商品管理 ==========
@@ -486,15 +523,19 @@ async function openProductModal(id){
 }
 async function genProductDesc(){
   const name=$('#fp-name').value,cat=$('#fp-cat');
-  if(!name.trim()){alert('请先填写商品名称');return;}
-  const el=$('#aiDescResult');el.className='ai-result loading';el.textContent='AI 生成中...';
+  if(!name.trim()){alert('Please enter product name first');return;}
+  const el=$('#aiDescResult');el.className='ai-result loading';el.textContent='AI streaming...';
   try{
-    const r=await api(`/admin/ai/generate_desc?product_name=${encodeURIComponent(name)}&category=${encodeURIComponent(cat.options[cat.selectedIndex]?.text||'')}`);
-    const text=r.description||'生成失败';
-    el.className='ai-result';el.textContent=text;
-    if(r.description)$('#fp-desc').value=text;
-  }catch(e){el.className='ai-result';el.textContent='生成失败：'+e.message;}
+    const text=await streamText(
+      `/admin/ai/generate_desc/stream?product_name=${encodeURIComponent(name)}&category=${encodeURIComponent(cat.options[cat.selectedIndex]?.text||'')}`,
+      {},
+      t=>{el.className='ai-result loading';el.textContent=t||'AI streaming...';}
+    );
+    el.className='ai-result';el.textContent=text||'Done';
+    if(text)$('#fp-desc').value=text;
+  }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
 }
+
 async function genProductImage(){
   const name=$('#fp-name').value.trim();if(!name){alert('请先填写商品名称');return;}
   const catEl=$('#fp-cat');
@@ -844,10 +885,16 @@ async function genBannerImage(){
   }catch(e){setNote('#fb-note','err','生成失败：'+e.message);}
 }
 async function genBannerCopy(){
-  const el=$('#aiBannerResult');el.className='ai-result loading';el.textContent='AI 创作中...';
-  const r=await api('/admin/ai/chat',{method:'POST',body:JSON.stringify({message:'Generate 3 banner slogans for a craft store, each under 10 chars'})});
-  el.className='ai-result';el.textContent=r.message||'';
+  const el=$('#aiBannerResult');el.className='ai-result loading';el.textContent='AI streaming...';
+  try{
+    const text=await streamText('/admin/ai/chat/stream',{method:'POST',body:JSON.stringify({message:'Generate 3 Chinese banner slogans for a craft store, each under 10 Chinese characters.'})},t=>{
+      el.className='ai-result loading';
+      el.textContent=t||'AI streaming...';
+    });
+    el.className='ai-result';el.textContent=text||'Done';
+  }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
 }
+
 async function saveBanner(id){
   if(!$('#fb-title').value.trim()){alert('请填写轮播图标题');return;}
   const linkType=$('#fb-type').value;
@@ -937,10 +984,16 @@ async function cancelOrder(id){
 }
 async function askAIOrder(){
   const q=$('#aiOrderQ').value.trim();if(!q)return;
-  const el=$('#aiOrderResult');el.style.display='block';el.className='ai-result loading';el.textContent='AI 思考中...';
-  const r=await api('/admin/ai/chat',{method:'POST',body:JSON.stringify({message:`你是小吉微商城客服，用户问：${q}。请用专业友好的语气回答。`})});
-  el.className='ai-result';el.textContent=r.message||'处理完毕';
+  const el=$('#aiOrderResult');el.style.display='block';el.className='ai-result loading';el.textContent='AI streaming...';
+  try{
+    const text=await streamText('/admin/ai/chat/stream',{method:'POST',body:JSON.stringify({message:`你是小吉微商城客服，用户问：${q}。请用专业友好的语气回答。`})},t=>{
+      el.className='ai-result loading';
+      el.textContent=t||'AI streaming...';
+    });
+    el.className='ai-result';el.textContent=text||'Done';
+  }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
 }
+
 function viewOrder(id){
   const o=state.orders.find(x=>x.id===id);
   if(!o)return;
@@ -1113,10 +1166,16 @@ async function renderUsers(kw){
 }
 async function runChurnWarning(){
   const el=$('#churnResult');el.style.display='block';
-  const content=$('#churnContent');content.className='ai-result loading';content.textContent='AI 正在分析用户流失风险，请稍候...';
-  const r=await api('/admin/ai/chat',{method:'POST',body:JSON.stringify({message:'基于以下用户数据，分析哪些用户有流失风险（7天未登录或长时间无消费），给出TOP5高风险用户及其原因：'+JSON.stringify(state.users.slice(0,20))})});
-  content.className='ai-result';content.textContent=r.message||'分析完成';
+  const content=$('#churnContent');content.className='ai-result loading';content.textContent='AI streaming...';
+  try{
+    const text=await streamText('/admin/ai/chat/stream',{method:'POST',body:JSON.stringify({message:'基于以下用户数据，分析哪些用户有流失风险（7天未登录或长时间无消费），给出TOP5高风险用户及其原因：'+JSON.stringify(state.users.slice(0,20))})},t=>{
+      content.className='ai-result loading';
+      content.textContent=t||'AI streaming...';
+    });
+    content.className='ai-result';content.textContent=text||'Done';
+  }catch(e){content.className='ai-result';content.textContent='AI request failed: '+e.message;}
 }
+
 async function viewUserProfile(id){
   const u=state.users.find(x=>x.id==id);if(!u)return;
   const points=await api(`/admin/users/${id}/points`).catch(()=>({points:u.points||0}));
@@ -1136,10 +1195,16 @@ async function viewUserProfile(id){
 }
 async function analyzeUser(id){
   const u=state.users.find(x=>x.id==id);if(!u)return;
-  const el=$('#userAiResult');el.className='ai-result loading';el.textContent='AI 正在生成建议...';
-  const r=await api('/admin/ai/chat',{method:'POST',body:JSON.stringify({message:'请基于这个用户画像给出运营建议，包括复购、优惠券和客服触达：'+JSON.stringify(u)})}).catch(e=>({message:'生成失败：'+e.message}));
-  el.className='ai-result';el.textContent=r.message||'暂无建议';
+  const el=$('#userAiResult');el.className='ai-result loading';el.textContent='AI streaming...';
+  try{
+    const text=await streamText('/admin/ai/chat/stream',{method:'POST',body:JSON.stringify({message:'请基于这个用户画像给出运营建议，包括复购、优惠券和客服触达：'+JSON.stringify(u)})},t=>{
+      el.className='ai-result loading';
+      el.textContent=t||'AI streaming...';
+    });
+    el.className='ai-result';el.textContent=text||'Done';
+  }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
 }
+
 function openPointsModal(id){
   const u=state.users.find(x=>x.id==id);if(!u)return;
   showModal(`${modalHeader('调整用户积分', esc(u.nickname||u.id))}
@@ -1195,26 +1260,28 @@ async function sendAI(){
   aiHistory.push({role:'user',content:msg});
   const msgsEl=$('#aiMsgs');
   msgsEl.innerHTML+=`<div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
-    <div style="font-size:14px;line-height:1.7;text-align:right">${msg}</div>
-    <div style="width:32px;height:32px;background:var(--bg);color:var(--text2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">👤</div></div>`;
+    <div style="font-size:14px;line-height:1.7;text-align:right">${esc(msg)}</div>
+    <div style="width:32px;height:32px;background:var(--bg);color:var(--text2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">U</div></div>`;
   msgsEl.innerHTML+=`<div id="aiTyping" style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:10px">
-    <div style="width:32px;height:32px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">🤖</div>
-    <div style="font-size:14px;color:var(--text2);font-style:italic">思考中...</div></div>`;
+    <div style="width:32px;height:32px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">AI</div>
+    <div id="aiTypingText" style="font-size:14px;line-height:1.7;white-space:pre-wrap;color:var(--text2);font-style:italic">AI streaming...</div></div>`;
   input.value='';msgsEl.scrollTop=msgsEl.scrollHeight;
   try{
-    const r=await api('/admin/ai/chat',{method:'POST',body:JSON.stringify({message:msg,context:aiHistory.slice(0,-1).map(m=>`${m.role}: ${m.content}`).join('\n')})});
-    const text=r.message||'处理完毕';
-    aiHistory.push({role:'assistant',content:text});
-    const typing=$('#aiTyping');if(typing)typing.remove();
-    msgsEl.innerHTML+=`<div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:10px">
-      <div style="width:32px;height:32px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">🤖</div>
-      <div style="font-size:14px;line-height:1.7;white-space:pre-wrap">${text}</div></div>`;
+    const text=await streamText('/admin/ai/chat/stream',{method:'POST',body:JSON.stringify({message:msg,context:aiHistory.slice(0,-1).map(m=>`${m.role}: ${m.content}`).join('\n')})},t=>{
+      const box=$('#aiTypingText');
+      if(box){box.style.color='var(--text)';box.style.fontStyle='normal';box.textContent=t||'AI streaming...';}
+      msgsEl.scrollTop=msgsEl.scrollHeight;
+    });
+    aiHistory.push({role:'assistant',content:text||'Done'});
+    const box=$('#aiTypingText');if(box){box.textContent=text||'Done';box.style.color='var(--text)';box.style.fontStyle='normal';}
+    const typing=$('#aiTyping');if(typing)typing.removeAttribute('id');
     msgsEl.scrollTop=msgsEl.scrollHeight;
   }catch(e){
     const typing=$('#aiTyping');if(typing)typing.remove();
-    msgsEl.innerHTML+=`<div style="padding:12px 0;color:var(--red);font-size:14px">请求失败：${e.message}</div>`;
+    msgsEl.innerHTML+=`<div style="padding:12px 0;color:var(--red);font-size:14px">AI request failed: ${esc(e.message)}</div>`;
   }
 }
+
 function clearAI(){aiHistory=[];renderAI();}
 
 // ---------- 初始化 ----------
@@ -1222,3 +1289,4 @@ if(TOKEN)showApp();
 </script>
 </body>
 </html>
+
