@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
@@ -10,7 +10,7 @@
   --green:#2d5a27;--green-light:#4a7c4f;--green-dark:#1e3d1a;
   --bg:#f0f4f8;--white:#fff;--text:#1a1a2e;--text2:#64748b;
   --border:#e2e8f0;--red:#e53e3e;--orange:#ed8936;--blue:#3182ce;
-  --purple:#805ad5;--shadow:0 4px 20px rgba(0,0,0,.08);
+  --purple:#805ad5;--teal:#0f766e;--shadow:0 4px 20px rgba(0,0,0,.08);
 }
 body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
 
@@ -99,10 +99,58 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green);outline:none}
 .form-group textarea{resize:vertical;min-height:80px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
-.modal{background:var(--white);border-radius:16px;padding:32px;width:560px;max-height:80vh;overflow-y:auto}
-.modal h2{font-size:18px;margin-bottom:24px}
-.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.42);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(3px);padding:20px}
+.modal{background:var(--white);border-radius:10px;padding:0;width:620px;max-width:96vw;max-height:88vh;overflow:hidden;box-shadow:0 24px 70px rgba(15,23,42,.22);display:flex;flex-direction:column}
+.modal.modal-lg{width:920px}
+.modal.modal-md{width:720px}
+.modal-body{padding:22px 24px;overflow-y:auto}
+.modal-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.modal-title{font-size:18px;font-weight:700;color:var(--text)}
+.modal-subtitle{font-size:12px;color:var(--text2);margin-top:4px}
+.modal-close{width:32px;height:32px;border:none;background:var(--bg);border-radius:8px;cursor:pointer;color:var(--text2);font-size:18px;line-height:1}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--border);background:#f8fafc;margin-top:0}
+.section-title{font-size:13px;font-weight:700;color:var(--text);margin:4px 0 14px;display:flex;align-items:center;gap:8px}
+.form-panel{border:1px solid var(--border);border-radius:10px;padding:16px;background:#fff;margin-bottom:16px}
+.form-panel.soft{background:#f8fafc}
+.form-help{font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5}
+.form-group.compact{margin-bottom:0}
+.switch-row{display:flex;align-items:center;gap:10px;min-height:40px}
+.switch-row input{width:auto}
+.image-workspace{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px;align-items:start}
+.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:10px;min-height:112px;background:#f8fafc;border:1px dashed var(--border);border-radius:10px;padding:10px}
+.image-tile{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#fff;border:1px solid var(--border)}
+.image-tile img{width:100%;height:100%;object-fit:cover;display:block}
+.image-tile button{position:absolute;top:6px;right:6px;width:24px;height:24px;border:none;border-radius:50%;background:rgba(15,23,42,.78);color:#fff;cursor:pointer;line-height:24px;text-align:center}
+.image-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--text2);font-size:13px;min-height:88px}
+.category-icon-thumb{width:44px;height:44px;border-radius:12px;background:#f6faf4;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
+.category-icon-thumb img{width:34px;height:34px;object-fit:contain}
+.category-icon-thumb .fallback{font-size:22px;color:var(--green);font-weight:700}
+.category-icon-editor{display:grid;grid-template-columns:140px minmax(0,1fr);gap:16px;align-items:start}
+.category-icon-preview{height:140px;border:1px dashed var(--border);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.category-icon-preview img{width:88px;height:88px;object-fit:contain}
+.link-target-box{border:1px solid var(--border);background:#f8fafc;border-radius:10px;padding:12px;margin-top:10px}
+.link-target-box .form-group{margin-bottom:0}
+.link-target-hint{font-size:12px;color:var(--text2);line-height:1.6}
+.link-target-preview{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px;border-radius:8px;background:#fff;border:1px solid var(--border);font-size:13px;color:var(--text2)}
+.link-target-preview strong{color:var(--text)}
+.tool-stack{display:flex;flex-direction:column;gap:10px}
+.tool-card{border:1px solid var(--border);background:#fff;border-radius:10px;padding:12px}
+.tool-card h4{font-size:13px;margin-bottom:8px;color:var(--text)}
+.status-note{display:none;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.5;margin-top:10px}
+.status-note.info{display:block;background:#eff6ff;color:#1d4ed8}
+.status-note.ok{display:block;background:#ecfdf5;color:#047857}
+.status-note.err{display:block;background:#fef2f2;color:#b91c1c}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.detail-item{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px}
+.detail-label{font-size:12px;color:var(--text2);margin-bottom:6px}
+.detail-value{font-size:15px;font-weight:700;color:var(--text);word-break:break-all}
+.table-wrap{overflow:auto}
+.table-actions{display:flex;gap:6px;flex-wrap:wrap}
+.empty.compact{padding:32px 16px}
+.b-purple{background:#f3e8ff;color:#6b21a8}
+.b-teal{background:#ccfbf1;color:#115e59}
+.b-yellow{background:#fef9c3;color:#854d0e}
+.b-black{background:#e5e7eb;color:#111827}
 
 /*搜索栏*/
 .search-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
@@ -131,8 +179,12 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 .upload-area .uploading{color:var(--green)}
 
 /*响应式*/
-@media(max-width:1200px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.stat-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:1200px){.stat-grid{grid-template-columns:repeat(2,1fr)}.image-workspace{grid-template-columns:1fr}}
+@media(max-width:768px){
+  .sidebar{display:none}.main{margin-left:0}.content{padding:16px}.stat-grid{grid-template-columns:1fr}
+  .form-row,.detail-grid,.category-icon-editor{grid-template-columns:1fr}.modal-overlay{padding:10px;align-items:flex-start}.modal{max-height:96vh}
+  .table th,.table td{padding:10px 12px}.card{padding:16px}
+}
 </style>
 </head>
 <body>
@@ -159,6 +211,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
     <nav class="sidebar-nav">
       <div class="nav-item active" onclick="switchTab('dashboard',this)"><span class="icon">📊</span>首页看板</div>
       <div class="nav-item" onclick="switchTab('products',this)"><span class="icon">🏷️</span>商品管理</div>
+      <div class="nav-item" onclick="switchTab('categories',this)"><span class="icon">📂</span>分类管理</div>
       <div class="nav-item" onclick="switchTab('banners',this)"><span class="icon">🎯</span>轮播图管理</div>
       <div class="nav-item" onclick="switchTab('orders',this)"><span class="icon">📦</span>订单管理</div>
       <div class="nav-item" onclick="switchTab('coupons',this)"><span class="icon">🎫</span>优惠券管理</div>
@@ -189,19 +242,65 @@ const API = 'https://api.zhouyuaninfo.com.cn/api/v1'
 let TOKEN = localStorage.getItem('adminToken') || ''
 let CUR_PAGE = 'dashboard'
 let state = { products: [], orders: [], users: [], coupons: [], banners: [] }
+const DEFAULT_CATEGORY_ICONS=[
+  {name:'海南黄花梨',url:'/assets/icons/huanghuali.svg'},
+  {name:'海南沉香',url:'/assets/icons/chenxiang.svg'},
+  {name:'木制工艺品',url:'/assets/icons/woodwork.svg'},
+  {name:'紫檀手串',url:'/assets/icons/zitan.svg'},
+  {name:'黄花梨旧版',url:'/assets/icons/huanghuali.png'},
+  {name:'沉香旧版',url:'/assets/icons/chenxiang.png'},
+  {name:'木工旧版',url:'/assets/icons/woodwork.png'}
+];
+const PLACEHOLDER_IMAGE='/assets/uploads/placeholder.svg';
 
 // ---------- 工具函数 ----------
 function $(s){return document.querySelector(s)}
 function $$(s){return document.querySelectorAll(s)}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function money(v){return '¥'+Number(v||0).toFixed(2)}
 async function api(path, opts={}){
-  const r = await fetch(API+path,{
-    ...opts,
-    headers:{...opts.headers,'Content-Type':'application/json','Authorization':`Bearer ${TOKEN}`}
-  })
-  return r.json()
+  const headers={...(opts.headers||{}),'Authorization':`Bearer ${TOKEN}`};
+  if(!(opts.body instanceof FormData))headers['Content-Type']='application/json';
+  const r = await fetch(API+path,{...opts,headers});
+  let data={};
+  try{data=await r.json()}catch(e){data={message:r.statusText||'请求失败'}}
+  if(!r.ok)throw new Error(data.detail||data.message||`请求失败（${r.status}）`);
+  return data;
 }
-function showModal(html){
-  $('#modalRoot').innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()">${html}</div>`
+async function streamText(path, opts={}, onUpdate=()=>{}){
+  const headers={...(opts.headers||{}),'Authorization':`Bearer ${TOKEN}`};
+  if(!(opts.body instanceof FormData))headers['Content-Type']='application/json';
+  const r=await fetch(API+path,{...opts,headers});
+  if(!r.ok){
+    const text=await r.text().catch(()=>r.statusText||'');
+    throw new Error(text||`Request failed: ${r.status}`);
+  }
+  if(!r.body){
+    const text=await r.text();
+    onUpdate(text);
+    return text;
+  }
+  const reader=r.body.getReader();
+  const decoder=new TextDecoder('utf-8');
+  let text='';
+  while(true){
+    const {value,done}=await reader.read();
+    if(done)break;
+    const chunk=decoder.decode(value,{stream:true});
+    if(chunk){
+      text+=chunk;
+      onUpdate(text,chunk);
+    }
+  }
+  const tail=decoder.decode();
+  if(tail){
+    text+=tail;
+    onUpdate(text,tail);
+  }
+  return text;
+}
+function showModal(html, size=''){
+  $('#modalRoot').innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal ${size}">${html}</div></div>`
 }
 function closeModal(){$('#modalRoot').innerHTML=''}
 function fmtDate(s){
@@ -212,8 +311,24 @@ function fmtDateTime(s){
 }
 function badge(cls,txt){return`<span class="badge b-${cls}">${txt}</span>`}
 function statusBadge(s){
-  const m={pending:['orange','待支付'],paid:['blue','待发货'],shipped:['purple','待收货'],completed:['green','已完成'],refunded:['gray','已退款'],cancelled:['red','已取消']};
+  const m={pending:['orange','待支付'],paid:['blue','待发货'],shipped:['purple','待收货'],received:['teal','已收货'],completed:['green','已完成'],refunded:['gray','已退款'],cancelled:['red','已取消']};
   const b=m[s]||['gray',s];return badge(b[0],b[1]);
+}
+function modalHeader(title,subtitle=''){
+  return `<div class="modal-head"><div><div class="modal-title">${title}</div>${subtitle?`<div class="modal-subtitle">${subtitle}</div>`:''}</div><button class="modal-close" onclick="closeModal()" title="关闭">×</button></div>`;
+}
+function emptyRow(cols, icon, text, desc=''){
+  return `<tr><td colspan="${cols}"><div class="empty compact"><div class="empty-icon">${icon}</div><div>${text}</div>${desc?`<div style="font-size:12px;margin-top:8px">${desc}</div>`:''}</div></td></tr>`;
+}
+function categoryIconCell(url,name=''){
+  const label=esc((name||'分').slice(0,1));
+  if(!url)return`<span class="category-icon-thumb"><span class="fallback">${label}</span></span>`;
+  return`<span class="category-icon-thumb"><img src="${esc(url)}" alt="${esc(name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fallback" style="display:none">${label}</span></span>`;
+}
+function setNote(sel,type,text){
+  const el=$(sel);if(!el)return;
+  el.className='status-note '+(type||'info');
+  el.textContent=text||'';
 }
 function setTime(){
   const d=new Date();$('#nowTime').textContent=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
@@ -229,7 +344,17 @@ function doLogin(){
     else alert(d.detail||'登录失败');
   }).catch(()=>alert('登录失败，请检查网络'));
 }
-function logout(){TOKEN='';localStorage.remove('adminToken');location.reload()}
+function logout(){
+  TOKEN='';
+  localStorage.removeItem('adminToken');
+  localStorage.removeItem('adminUser');
+  closeModal();
+  $('#appPage').style.display='none';
+  $('#loginPage').style.display='flex';
+  $('#mainContent').innerHTML='';
+  $('#password').value='';
+  $('#username').focus();
+}
 function showApp(){
   $('#loginPage').style.display='none';$('#appPage').style.display='flex';
   $('#adminName').textContent=localStorage.getItem('adminUser')||'admin';
@@ -240,11 +365,13 @@ function showApp(){
 function switchTab(tab,el){
   CUR_PAGE=tab;
   $$('.nav-item').forEach(e=>e.classList.remove('active'));
+  if(!el)el=[...$$('.nav-item')].find(n=>n.getAttribute('onclick')?.includes(`'${tab}'`));
   if(el)el.classList.add('active');
-  const titles={dashboard:'📊 首页看板',products:'🏷️ 商品管理',banners:'🎯 轮播图管理',orders:'📦 订单管理',coupons:'🎫 优惠券管理',users:'👥 用户管理',ai:'🤖 智能助手'};
+  const titles={dashboard:'📊 首页看板',products:'🏷️ 商品管理',categories:'📂 分类管理',banners:'🎯 轮播图管理',orders:'📦 订单管理',coupons:'🎫 优惠券管理',users:'👥 用户管理',ai:'🤖 智能助手'};
   $('#pageTitle').textContent=titles[tab]||tab;
   if(tab==='dashboard')renderDashboard();
   else if(tab==='products')renderProducts();
+  else if(tab==='categories')renderCategories();
   else if(tab==='banners')renderBanners();
   else if(tab==='orders')renderOrders();
   else if(tab==='coupons')renderCoupons();
@@ -255,7 +382,10 @@ function switchTab(tab,el){
 // ========== 首页看板 ==========
 async function renderDashboard(){
   const d=await api('/admin/stats');
-  const stats=[{label:'今日订单',val:d.today_orders||0,sub:'待处理 '+(d.pending_orders||0)+' 单',cls:''},
+  const paidOrders=d.paid_orders ?? d.pending_orders ?? 0;
+  const pendingPaymentOrders=d.pending_payment_orders || 0;
+  const lowStock=d.low_stock_products||[];
+  const stats=[{label:'今日订单',val:d.today_orders||0,sub:'待发货 '+paidOrders+' 单',cls:''},
     {label:'今日销售额',val:'¥'+((d.today_sales||0).toFixed(0)),sub:'元',cls:'blue'},
     {label:'新增用户',val:d.today_users||0,sub:'人',cls:'orange'},
     {label:'商品总数',val:d.total_products||0,sub:'在售',cls:''}];
@@ -265,9 +395,27 @@ async function renderDashboard(){
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
     <div class="card">
-      <div class="card-header"><h3>⏳ 待处理事项</h3></div>
-      <p>${d.pending_orders||0} 个待发货订单</p>
-      ${(d.low_stock_products||[]).length?`<div style="margin-top:12px">${d.low_stock_products.map(p=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>${p.name}</span><span style="color:var(--red)">库存 ${p.stock}</span></div>`).join('')}</div>`:''}
+      <div class="card-header">
+        <h3>⏳ 待处理事项</h3>
+        <div class="card-actions"><button class="btn btn-secondary btn-sm" onclick="renderDashboard()">刷新</button></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div onclick="openPendingShipments()" style="border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;background:#f8fafc">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px">待发货订单</div>
+          <div style="font-size:26px;font-weight:700;color:var(--blue)">${paidOrders}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">点击进入订单管理</div>
+        </div>
+        <div onclick="openPendingPayments()" style="border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;background:#f8fafc">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px">待支付订单</div>
+          <div style="font-size:26px;font-weight:700;color:var(--orange)">${pendingPaymentOrders}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">点击查看待支付</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <strong>低库存商品</strong>
+        <button class="btn btn-secondary btn-sm" onclick="openProductsList()">全部商品</button>
+      </div>
+      ${lowStock.length?`<div>${lowStock.map(p=>`<div onclick="openLowStockProduct('${p.id}')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer"><span>${esc(p.name)}</span><span style="color:var(--red);font-weight:600">库存 ${p.stock}</span></div>`).join('')}</div>`:'<div class="empty compact"><div class="empty-icon">✅</div><div>暂无低库存商品</div><div style="font-size:12px;margin-top:8px">库存低于 10 的商品会显示在这里。</div></div>'}
     </div>
 
     <div class="card">
@@ -277,36 +425,66 @@ async function renderDashboard(){
   </div>`;
   $('#mainContent').innerHTML=html;
 }
+function openPendingShipments(){
+  oStatus='paid';oPage=1;oKw='';
+  switchTab('orders');
+}
+function openPendingPayments(){
+  oStatus='pending';oPage=1;oKw='';
+  switchTab('orders');
+}
+function openProductsList(){
+  pPage=1;pKw='';
+  switchTab('products');
+}
+async function openLowStockProduct(id){
+  CUR_PAGE='products';
+  $$('.nav-item').forEach(e=>e.classList.remove('active'));
+  const nav=[...$$('.nav-item')].find(n=>n.getAttribute('onclick')?.includes("'products'"));
+  if(nav)nav.classList.add('active');
+  $('#pageTitle').textContent='🏷️ 商品管理';
+  pPage=1;pKw='';
+  await renderProducts();
+  openProductModal(id);
+}
 async function runAIAnalyze(){
   const el=$('#aiResult');
-  el.className='ai-result loading';el.textContent='AI 正在分析数据，请稍候...';
-  const d=await api('/admin/stats');
-  const result=await api('/admin/ai/analyze?type=sales&data='+encodeURIComponent(JSON.stringify(d)));
-  el.className='ai-result';el.textContent=result.analysis||result.message||'分析完毕';
+  el.className='ai-result loading';el.textContent='AI streaming...';
+  try{
+    const d=await api('/admin/stats');
+    const text=await streamText('/admin/ai/analyze/stream?type=sales&data='+encodeURIComponent(JSON.stringify(d)),{},t=>{
+      el.className='ai-result loading';
+      el.textContent=t||'AI streaming...';
+    });
+    el.className='ai-result';el.textContent=text||'Done';
+  }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
 }
 
 // ========== 商品管理 ==========
-let pPage=1;
-async function renderProducts(kw=''){
-  const d=await api(`/admin/products/?page=${pPage}&page_size=10&keyword=${kw}`);
+let pPage=1,pKw='';
+async function renderProducts(kw){
+  if(kw!==undefined){pKw=kw.trim();pPage=1;}
+  const d=await api(`/admin/products/?page=${pPage}&page_size=10&keyword=${encodeURIComponent(pKw)}`);
   state.products=d.items||[];
   const total=d.total||0;
   const html=`
   <div class="card">
     <div class="card-header"><h3>🏷️ 商品列表</h3><button class="btn btn-primary" onclick="openProductModal()">+ 新增商品</button></div>
     <div class="search-bar">
-      <input placeholder="搜索商品名称..." value="${kw}" onkeydown="if(event.key==='Enter')renderProducts(this.value)">
-      <button class="btn btn-secondary" onclick="renderProducts(this.previousElementSibling.value)">搜索</button>
+      <input id="productSearch" placeholder="搜索商品名称 / 副标题..." value="${esc(pKw)}" onkeydown="if(event.key==='Enter')renderProducts(this.value)">
+      <button class="btn btn-secondary" onclick="renderProducts($('#productSearch').value)">搜索</button>
+      ${pKw?`<button class="btn btn-secondary" onclick="renderProducts('')">清空</button>`:''}
     </div>
     <table class="table">
-      <thead><tr><th>商品</th><th>分类</th><th>价格/运费</th><th>库存</th><th>销量</th><th>状态</th><th>操作</th></tr></thead>
+      <thead><tr><th>商品</th><th>分类</th><th>价格/运费</th><th>库存</th><th>销量</th><th>评分</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>
         ${state.products.map(p=>`<tr>
-          <td><div style="display:flex;align-items:center;gap:10px"><img src="${(p.images||[''])[0]||'/assets/default.jpg'}" onerror="this.src='/assets/placeholder.jpg'" style="width:48px;height:48px;border-radius:8px;object-fit:cover"><div><div style="font-weight:500">${p.name}</div><div style="color:var(--text2);font-size:12px">${p.subtitle||'-'}</div></div></div></td>
+          <td><div style="display:flex;align-items:center;gap:10px"><img src="${(p.images||[''])[0]||PLACEHOLDER_IMAGE}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:48px;height:48px;border-radius:8px;object-fit:cover"><div><div style="font-weight:500">${p.name}</div><div style="color:var(--text2);font-size:12px">${p.subtitle||'-'}</div></div></div></td>
           <td>${p.category_name||'-'}</td>
           <td><span style="color:var(--red);font-weight:600">¥${p.price}</span>${p.original_price>p.price?`<span style="text-decoration:line-through;color:var(--text2);font-size:12px;margin-left:4px">¥${p.original_price}</span>`:''}<div style="color:var(--text2);font-size:12px;margin-top:3px">运费：${Number(p.shipping_fee||0)>0?`¥${p.shipping_fee}`:'免运费'}</div></td>
           <td><span style="color:${p.stock<10?'var(--red)':'inherit'}">${p.stock}</span></td>
           <td>${p.sales_count||0}</td>
+          <td><span style="color:#f59e0b;font-weight:600">⭐ ${Number(p.rating||5).toFixed(1)}</span></td>
           <td>${p.is_on_sale?badge('green','在售'):badge('gray','下架')}</td>
           <td>
             <button class="btn btn-secondary btn-sm" onclick="openProductModal('${p.id}')">编辑</button>
@@ -314,143 +492,527 @@ async function renderProducts(kw=''){
             <button class="btn btn-danger btn-sm" onclick="delProduct('${p.id}')">删除</button>
           </td>
         </tr>`).join('')}
+        ${!state.products.length?emptyRow(8,'🏷️',pKw?'没有匹配的商品':'暂无商品',pKw?'换个关键词试试。':'点击右上角新增商品。'):''}
       </tbody>
     </table>
     <div class="pagination">
-      <button ${pPage<=1?'disabled':''} onclick="pPage--;renderProducts('${kw}')">上一页</button>
+      <button ${pPage<=1?'disabled':''} onclick="pPage--;renderProducts()">上一页</button>
       <span>第 ${pPage} / ${Math.max(1,Math.ceil(total/10))} 页</span>
-      <button ${pPage*10>=total?'disabled':''} onclick="pPage++;renderProducts('${kw}')">下一页</button>
+      <button ${pPage*10>=total?'disabled':''} onclick="pPage++;renderProducts()">下一页</button>
     </div>
   </div>`;
   $('#mainContent').innerHTML=html;
 }
 async function openProductModal(id){
-  const p=id?state.products.find(x=>x.id===id):null;
-  const cats=await api('/categories').catch(()=>({items:[]}));
-  const catOpts=(cats.items||[]).map(c=>`<option value="${c.id}" ${p&&p.category_id===c.id?'selected':''}>${c.name}</option>`).join('');
-  showModal(`<h2>${p?'编辑':'新增'}商品</h2>
-    <div class="form-row"><div class="form-group"><label>商品名称</label><input id="fp-name" value="${p?.name||''}"></div>
-    <div class="form-group"><label>分类</label><select id="fp-cat"><option value="">请选择</option>${catOpts}</select></div></div>
-    <div class="form-row"><div class="form-group"><label>价格（元）</label><input id="fp-price" type="number" step="0.01" min="0" value="${p?.price||''}"></div>
-    <div class="form-group"><label>划线价（元）</label><input id="fp-op" type="number" step="0.01" min="0" value="${p?.original_price||''}"></div></div>
-    <div class="form-row"><div class="form-group"><label>运费（元）</label><input id="fp-shipping" type="number" step="0.01" min="0" value="${p?.shipping_fee||0}" placeholder="0 表示免运费"></div>
-    <div class="form-group"><label>副标题</label><input id="fp-sub" value="${p?.subtitle||''}"></div></div>
-    <div class="form-row"><div class="form-group"><label>库存</label><input id="fp-stock" type="number" value="${p?.stock||0}"></div>
-    <div class="form-group"><label>评分（1-5）</label><input id="fp-rating" type="number" step="0.1" min="1" max="5" value="${p?.rating||5}"></div></div>
-    <div class="form-group"><label>商品描述</label><textarea id="fp-desc">${p?.description||''}</textarea></div>
-    <div class="form-group"><label>图片URL（多张逗号分隔）</label><input id="fp-img" value="${(p?.images||[]).join(',')}"></div>
-    <div class="ai-box"><h4>🤖 AI 助手</h4><button class="btn btn-secondary btn-sm" onclick="genProductDesc()">一键生成商品描述</button>
-    <div id="aiDescResult" class="ai-result" style="margin-top:10px"></div></div>
+  const p=id?(state.products.find(x=>x.id===id) || await api(`/admin/products/${id}`).catch(()=>null)):null;
+  const cats=await api('/admin/categories/').catch(()=>({items:[]}));
+  const catItems=cats.items||cats.data?.items||[];
+  const catOpts=catItems.map(c=>`<option value="${c.id}" ${p&&p.category_id===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
+  showModal(`${modalHeader(p?'编辑商品':'新增商品', '完善基础信息、商品图片和 AI 描述后保存')}
+    <div class="modal-body">
+      <div class="form-panel">
+        <div class="section-title">基础信息</div>
+        <div class="form-row">
+          <div class="form-group"><label>商品名称 *</label><input id="fp-name" value="${esc(p?.name||'')}" placeholder="如：海南黄花梨手串"></div>
+          <div class="form-group"><label>分类</label><select id="fp-cat"><option value="">请选择分类</option>${catOpts}</select></div>
+        </div>
+        <div class="form-group"><label>副标题</label><input id="fp-sub" value="${esc(p?.subtitle||'')}" placeholder="用于列表展示的短卖点"></div>
+        <div class="form-row">
+          <div class="form-group"><label>售价（元） *</label><input id="fp-price" type="number" min="0" step="0.01" value="${p?.price??''}"></div>
+          <div class="form-group"><label>划线价（元）</label><input id="fp-op" type="number" min="0" step="0.01" value="${p?.original_price??''}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>运费（元）</label><input id="fp-shipping" type="number" min="0" step="0.01" value="${p?.shipping_fee??0}" placeholder="0 表示免运费"></div>
+          <div class="form-group"><label>运费说明</label><input value="小程序结算时会计入该商品运费" disabled></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>库存</label><input id="fp-stock" type="number" min="0" value="${p?.stock??0}"></div>
+          <div class="form-group"><label>评分（1-5）</label><input id="fp-rating" type="number" min="1" max="5" step="0.1" value="${p?.rating??5.0}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>销售状态</label><select id="fp-sale"><option value="true" ${p?.is_on_sale!==false?'selected':''}>上架销售</option><option value="false" ${p?.is_on_sale===false?'selected':''}>暂时下架</option></select></div>
+          <div class="form-group"><label>前端展示</label><input value="小程序展示为 ⭐${Number(p?.rating??5.0).toFixed(1)}" disabled></div>
+        </div>
+        <div class="form-group"><label>商品描述</label><textarea id="fp-desc" placeholder="介绍材质、工艺、规格、收藏价值">${esc(p?.description||'')}</textarea></div>
+      </div>
+
+      <div class="form-panel soft">
+        <div class="section-title">图片素材</div>
+        <div class="image-workspace">
+          <div>
+            <div id="fp-img-grid" class="image-grid"></div>
+            <input type="hidden" id="fp-img-list" value="${esc((p?.images||[]).join(','))}">
+            <div id="fp-img-note" class="status-note"></div>
+          </div>
+          <div class="tool-stack">
+            <div class="tool-card">
+              <h4>AI 商品主图</h4>
+              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="genProductImage()">AI 生成图片</button>
+              <div class="form-help">会根据商品名称和分类生成电商主图，并自动加入图片列表。</div>
+            </div>
+            <div class="tool-card">
+              <h4>本地上传</h4>
+              <label class="btn btn-secondary" style="width:100%;justify-content:center;cursor:pointer">选择图片<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadProductImage(this.files[0])"></label>
+              <div class="form-help">支持 JPG、PNG、WebP，单张不超过 5MB。</div>
+            </div>
+            <div class="tool-card">
+              <h4>外链图片</h4>
+              <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="addImageUrl()">添加图片链接</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-box">
+        <h4>AI 商品文案</h4>
+        <button class="btn btn-secondary btn-sm" onclick="genProductDesc()">生成商品描述</button>
+        <div id="aiDescResult" class="ai-result" style="margin-top:10px;min-height:54px">可根据商品名和分类生成描述，确认后会自动填入“商品描述”。</div>
+      </div>
+    </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">取消</button>
-    <button class="btn btn-primary" onclick="saveProduct('${id||''}')">保存</button></div>`);
+    <button class="btn btn-primary" onclick="saveProduct('${id||''}')">保存商品</button></div>`, 'modal-lg');
   if(p)$('#fp-cat').value=p.category_id||'';
+  setFpImages(p?.images||[]);
 }
 async function genProductDesc(){
   const name=$('#fp-name').value,cat=$('#fp-cat');
-  const el=$('#aiDescResult');el.className='ai-result loading';el.textContent='AI 生成中...';
-  const r=await api(`/admin/ai/generate_desc?product_name=${encodeURIComponent(name)}&category=${encodeURIComponent(cat.options[cat.selectedIndex]?.text||'')}`);
-  el.className='ai-result';el.textContent=r.description||'生成失败';
+  if(!name.trim()){alert('Please enter product name first');return;}
+  const el=$('#aiDescResult');el.className='ai-result loading';el.textContent='AI streaming...';
+  try{
+    const text=await streamText(
+      `/admin/ai/generate_desc/stream?product_name=${encodeURIComponent(name)}&category=${encodeURIComponent(cat.options[cat.selectedIndex]?.text||'')}`,
+      {},
+      t=>{el.className='ai-result loading';el.textContent=t||'AI streaming...';}
+    );
+    el.className='ai-result';el.textContent=text||'Done';
+    if(text)$('#fp-desc').value=text;
+  }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
 }
+
+async function genProductImage(){
+  const name=$('#fp-name').value.trim();if(!name){alert('请先填写商品名称');return;}
+  const catEl=$('#fp-cat');
+  const category=catEl.options[catEl.selectedIndex]?.text||'';
+  setNote('#fp-img-note','info','AI 正在生成图片，请稍候...');
+  try{
+    const r=await api(`/admin/ai/generate_image?product_name=${encodeURIComponent(name)}&category=${encodeURIComponent(category)}`);
+    if(r.error)throw new Error(r.error);
+    const url=r.image_url;if(!url)throw new Error('生成失败，请重试');
+    const imgs=getFpImages();imgs.push(url);setFpImages(imgs);
+    setNote('#fp-img-note','ok','AI 图片已生成并加入图片列表。');
+  }catch(e){setNote('#fp-img-note','err','生成失败：'+e.message);}
+}
+async function uploadProductImage(file){
+  if(!file)return;
+  setNote('#fp-img-note','info','图片上传中...');
+  try{
+    const fd=new FormData();fd.append('file',file);
+    const d=await api('/admin/upload/image',{method:'POST',body:fd});
+    const url=d.url;const imgs=getFpImages();imgs.push(url);setFpImages(imgs);
+    setNote('#fp-img-note','ok','图片已上传并加入图片列表。');
+  }catch(e){setNote('#fp-img-note','err','上传失败：'+e.message);}
+}
+function addImageUrl(){
+  const url=prompt('请输入图片URL地址：');if(!url||!url.trim())return;
+  const imgs=getFpImages();imgs.push(url.trim());setFpImages(imgs);
+}
+function removeFpImg(idx){
+  const imgs=getFpImages();imgs.splice(idx,1);setFpImages(imgs);
+}
+function getFpImages(){
+  return $('#fp-img-list').value.split(',').filter(Boolean);
+}
+function setFpImages(imgs){
+  $('#fp-img-list').value=imgs.join(',');
+  const grid=$('#fp-img-grid');if(!grid)return;
+  grid.innerHTML=imgs.length===0?'<div class="image-empty">暂无图片，使用右侧工具添加</div>':
+    imgs.map((img,i)=>`<div class="image-tile" id="fp-img-wrap-${i}">
+      <img src="${esc(img)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE">
+      <button onclick="removeFpImg(${i})" title="删除">×</button>
+    </div>`).join('');
+}
+
 async function saveProduct(id){
-  const payload={name:$('#fp-name').value,category_id:$('#fp-cat').value||null,
+  if(!$('#fp-name').value.trim()){alert('请填写商品名称');return;}
+  const rating=parseFloat($('#fp-rating').value)||5;
+  if(rating<1||rating>5){alert('评分请输入 1 到 5 之间的数字');return;}
+  const payload={name:$('#fp-name').value.trim(),category_id:$('#fp-cat').value||null,
     price:parseFloat($('#fp-price').value)||0,original_price:parseFloat($('#fp-op').value)||0,
     shipping_fee:parseFloat($('#fp-shipping').value)||0,
     subtitle:$('#fp-sub').value,description:$('#fp-desc').value,
     stock:parseInt($('#fp-stock').value)||0,
-    rating:parseFloat($('#fp-rating').value)||5,
-    images:$('#fp-img').value.split(',').filter(Boolean),
-    is_on_sale:true};
+    rating,
+    images:$('#fp-img-list').value.split(',').filter(Boolean),
+    is_on_sale:$('#fp-sale').value==='true'};
   const method=id?'PUT':'POST';
   const path=id?`/admin/products/${id}`:'/admin/products/';
-  await api(path,{method,body:JSON.stringify(payload)});
-  closeModal();renderProducts();
+  try{await api(path,{method,body:JSON.stringify(payload)});closeModal();renderProducts();}
+  catch(e){alert('保存失败：'+e.message);}
 }
 async function toggleProduct(id){await api(`/admin/products/${id}/toggle`,{method:'POST'});renderProducts();}
 async function delProduct(id){if(!confirm('确定删除？'))return;await api(`/admin/products/${id}`,{method:'DELETE'});renderProducts();}
 
-// ========== 轮播图管理 ==========
-async function renderBanners(){
-  const d=await api('/admin/banners/');
-  state.banners=d;
+
+// ========== 分类管理 ==========
+let cPage=1,catKw='';
+async function renderCategories(kw){
+  if(kw!==undefined)catKw=(kw||'').trim();
+  const d=await api('/admin/categories/');
+  state.categories=d.items||[];
+  const rows=state.categories.filter(c=>{
+    const text=[c.name,c.icon_url,c.is_active?'启用':'禁用'].join(' ').toLowerCase();
+    return !catKw||text.includes(catKw.toLowerCase());
+  });
   const html=`<div class="card">
-    <div class="card-header"><h3>🎯 轮播图列表</h3><button class="btn btn-primary" onclick="openBannerModal()">+ 新增轮播图</button></div>
+    <div class="card-header"><h3>📂 分类列表</h3><button class="btn btn-primary" onclick="openCategoryModal()">+ 新建分类</button></div>
+    <div class="search-bar">
+      <input id="categorySearch" placeholder="搜索分类名称 / 图标..." value="${esc(catKw)}" onkeydown="if(event.key==='Enter')renderCategories(this.value)">
+      <button class="btn btn-secondary" onclick="renderCategories($('#categorySearch').value)">搜索</button>
+      ${catKw?`<button class="btn btn-secondary" onclick="renderCategories('')">清空</button>`:''}
+    </div>
     <table class="table">
-      <thead><tr><th>图片</th><th>标题</th><th>链接类型</th><th>排序</th><th>状态</th><th>操作</th></tr></thead>
+      <thead><tr><th>排序</th><th>名称</th><th>图标</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>
-        ${(d||[]).map(b=>`<tr>
-          <td><img src="${b.image_url}" onerror="this.src='/assets/placeholder.jpg'" style="width:120px;height:60px;object-fit:cover;border-radius:6px"></td>
-          <td>${b.title}</td>
-          <td>${b.link_type}</td>
-          <td>${b.sort_order}</td>
-          <td>${b.is_active?badge('green','启用'):badge('gray','禁用')}</td>
+        ${rows.map(c=>`<tr>
+          <td>${c.sort_order}</td>
+          <td style="font-weight:600">${c.name}</td>
+          <td>${categoryIconCell(c.icon_url,c.name)}</td>
+          <td>${c.is_active?badge('green','启用'):badge('gray','禁用')}</td>
           <td>
-            <button class="btn btn-secondary btn-sm" onclick="openBannerModal('${b.id}')">编辑</button>
-            <button class="btn btn-danger btn-sm" onclick="delBanner('${b.id}')">删除</button>
+            <button class="btn btn-secondary btn-sm" onclick="openCategoryModal('${c.id}')">编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="delCategory('${c.id}')">删除</button>
           </td>
         </tr>`).join('')}
+        ${!rows.length?emptyRow(5,'📂',catKw?'没有匹配的分类':'暂无分类',catKw?'换个关键词试试。':'点击右上角新建分类。'):''}
       </tbody>
     </table>
   </div>`;
   $('#mainContent').innerHTML=html;
 }
+async function openCategoryModal(id){
+  const c=id?state.categories.find(x=>x.id===id):null;
+  const iconOpts=DEFAULT_CATEGORY_ICONS.map(i=>`<option value="${esc(i.url)}" ${c?.icon_url===i.url?'selected':''}>${esc(i.name)}</option>`).join('');
+  showModal(`${modalHeader(c?'编辑分类':'新建分类','分类会展示在小程序首页和商品筛选中')}
+    <div class="modal-body">
+      <div class="form-panel">
+        <div class="form-row">
+          <div class="form-group"><label>分类名称 *</label><input id="fc-name" value="${esc(c?.name||'')}" placeholder="如：海南黄花梨"></div>
+          <div class="form-group"><label>排序值</label><input id="fc-sort" type="number" value="${c?.sort_order||0}"><div class="form-help">数字越小越靠前。</div></div>
+        </div>
+        <div class="form-group compact"><label>状态</label><div class="switch-row">
+          <input id="fc-active" type="checkbox" ${c?.is_active!==false?'checked':''}><span>启用该分类</span>
+        </div></div>
+      </div>
+      <div class="form-panel soft">
+        <div class="section-title">图标素材</div>
+        <div class="category-icon-editor">
+          <div>
+            <div id="fc-icon-preview" class="category-icon-preview"></div>
+            <div id="fc-icon-note" class="status-note"></div>
+          </div>
+          <div class="tool-stack">
+            <div class="form-row">
+              <div class="form-group"><label>默认图标</label><select id="fc-default-icon" onchange="chooseCategoryDefaultIcon(this.value)"><option value="">请选择默认图标</option>${iconOpts}</select></div>
+              <div class="form-group"><label>AI 风格描述</label><input id="fc-icon-style" placeholder="如：扁平、国风、木纹质感"></div>
+            </div>
+            <div class="form-group"><label>图标 URL</label><input id="fc-icon" value="${esc(c?.icon_url||'')}" placeholder="/assets/icons/huanghuali.svg" oninput="setCategoryIcon(this.value)"></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <label class="btn btn-secondary" style="cursor:pointer">上传图标<input type="file" accept="image/jpeg,image/png,image/svg+xml,image/webp" style="display:none" onchange="uploadCategoryIcon(this.files[0])"></label>
+              <button class="btn btn-primary" onclick="genCategoryIcon()">AI 生成图标</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">取消</button>
+    <button class="btn btn-primary" onclick="saveCategory('${id||''}')">保存分类</button></div>`, 'modal-md');
+  setCategoryIcon(c?.icon_url||'');
+}
+function setCategoryIcon(url){
+  const val=(url||'').trim();
+  const input=$('#fc-icon');if(input&&input.value!==val)input.value=val;
+  const select=$('#fc-default-icon');if(select)select.value=DEFAULT_CATEGORY_ICONS.some(i=>i.url===val)?val:'';
+  const preview=$('#fc-icon-preview');if(!preview)return;
+  preview.innerHTML=val?`<img src="${esc(val)}" alt="分类图标" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="category-icon-thumb" style="width:72px;height:72px;display:none"><span class="fallback">图</span></span>`:`<div style="color:var(--text2);font-size:13px;text-align:center">选择、上传或 AI 生成分类图标</div>`;
+}
+function chooseCategoryDefaultIcon(url){
+  if(!url)return;
+  setCategoryIcon(url);
+  const matched=DEFAULT_CATEGORY_ICONS.find(i=>i.url===url);
+  if(matched&&!$('#fc-name').value.trim())$('#fc-name').value=matched.name.replace('旧版','');
+}
+async function uploadCategoryIcon(file){
+  if(!file)return;
+  setNote('#fc-icon-note','info','图标上传中...');
+  try{
+    const fd=new FormData();fd.append('file',file);
+    const d=await api('/home/categories/upload',{method:'POST',body:fd});
+    if(!d.url)throw new Error(d.detail||d.message||'上传失败');
+    setCategoryIcon(d.url);
+    setNote('#fc-icon-note','ok','图标已上传并填入。');
+  }catch(e){setNote('#fc-icon-note','err','上传失败：'+e.message);}
+}
+async function genCategoryIcon(){
+  const name=$('#fc-name').value.trim();if(!name){alert('请先填写分类名称');return;}
+  const style=$('#fc-icon-style').value.trim();
+  setNote('#fc-icon-note','info','AI 正在生成分类图标，请稍候...');
+  try{
+    const r=await api(`/home/categories/ai/generate_icon?category_name=${encodeURIComponent(name)}&category_type=${encodeURIComponent(style)}`);
+    if(r.error)throw new Error(r.error);
+    if(!r.icon_url)throw new Error('生成失败，请重试');
+    setCategoryIcon(r.icon_url);
+    setNote('#fc-icon-note','ok','AI 图标已生成并填入图标 URL。');
+  }catch(e){setNote('#fc-icon-note','err','生成失败：'+e.message);}
+}
+async function saveCategory(id){
+  if(!$('#fc-name').value.trim()){alert('请填写分类名称');return;}
+  const payload={
+    name:$('#fc-name').value.trim(),
+    icon_url:$('#fc-icon').value,
+    sort_order:parseInt($('#fc-sort').value)||0,
+    is_active:$('#fc-active').checked
+  };
+  const method=id?'PUT':'POST';
+  const path=id?`/admin/categories/${id}`:'/admin/categories/';
+  try{await api(path,{method,body:JSON.stringify(payload)});closeModal();renderCategories();}
+  catch(e){alert('保存失败：'+e.message);}
+}
+async function delCategory(id){
+  if(!confirm('确定删除该分类？'))return;
+  const r=await api(`/admin/categories/${id}`,{method:'DELETE'});
+  if(r.detail){
+    alert('删除失败：'+r.detail);
+  }else{
+    renderCategories();
+  }
+}
+
+// ========== 轮播图管理 ==========
+let bannerKw='';
+async function renderBanners(kw){
+  if(kw!==undefined)bannerKw=(kw||'').trim();
+  const d=await api('/admin/banners/');
+  state.banners=Array.isArray(d)?d:(d.items||[]);
+  const rows=state.banners.filter(b=>{
+    const text=[b.title,b.link_type,b.link_value,b.image_url,b.is_active?'启用':'禁用'].join(' ').toLowerCase();
+    return !bannerKw||text.includes(bannerKw.toLowerCase());
+  });
+  const html=`<div class="card">
+    <div class="card-header"><h3>🎯 轮播图列表</h3><button class="btn btn-primary" onclick="openBannerModal()">+ 新增轮播图</button></div>
+    <div class="search-bar">
+      <input id="bannerSearch" placeholder="搜索标题 / 链接 / 图片..." value="${esc(bannerKw)}" onkeydown="if(event.key==='Enter')renderBanners(this.value)">
+      <button class="btn btn-secondary" onclick="renderBanners($('#bannerSearch').value)">搜索</button>
+      ${bannerKw?`<button class="btn btn-secondary" onclick="renderBanners('')">清空</button>`:''}
+    </div>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>图片</th><th>标题</th><th>链接类型</th><th>排序</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody>
+        ${rows.map(b=>`<tr>
+          <td><img src="${esc(b.image_url||PLACEHOLDER_IMAGE)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:120px;height:60px;object-fit:cover;border-radius:6px"></td>
+          <td>${esc(b.title)}</td>
+          <td>${b.link_type}</td>
+          <td>${b.sort_order}</td>
+          <td>${b.is_active?badge('green','启用'):badge('gray','禁用')}</td>
+          <td><div class="table-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openBannerModal('${b.id}')">编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="delBanner('${b.id}')">删除</button>
+          </div></td>
+        </tr>`).join('')}
+        ${!rows.length?emptyRow(6,'🎯',bannerKw?'没有匹配的轮播图':'暂无轮播图',bannerKw?'换个关键词试试。':'点击右上角新增首页轮播内容。'):''}
+      </tbody>
+    </table></div>
+  </div>`;
+  $('#mainContent').innerHTML=html;
+}
 async function openBannerModal(id){
   const b=id?state.banners.find(x=>x.id===id):null;
-  showModal(`<h2>${b?'编辑':'新增'}轮播图</h2>
-    <div class="form-group"><label>标题</label><input id="fb-title" value="${b?.title||''}"></div>
-    <div class="form-row"><div class="form-group"><label>链接类型</label><select id="fb-type"><option value="none" ${b?.link_type==='none'?'selected':''}>无链接</option><option value="product" ${b?.link_type==='product'?'selected':''}>商品</option><option value="category" ${b?.link_type==='category'?'selected':''}>分类</option><option value="url" ${b?.link_type==='url'?'selected':''}>URL</option></select></div>
-    <div class="form-group"><label>排序值</label><input id="fb-order" type="number" value="${b?.sort_order||0}"></div></div>
-    <div class="form-group"><label>链接目标</label><input id="fb-val" value="${b?.link_value||''}" placeholder="商品ID/分类ID/URL"></div>
-    <div class="form-group"><label>图片URL</label><input id="fb-img" value="${b?.image_url||''}" placeholder="/assets/banners/xxx.jpg"></div>
-    <div class="ai-box"><h4>🤖 AI 生成文案</h4><button class="btn btn-secondary btn-sm" onclick="genBannerCopy()">生成营销slogan</button>
-    <div id="aiBannerResult" class="ai-result" style="margin-top:10px"></div></div>
+  const [products,categories]=await Promise.all([
+    api('/admin/products/?page=1&page_size=100').catch(()=>({items:[]})),
+    api('/admin/categories/').catch(()=>({items:[]}))
+  ]);
+  const productItems=products.items||[];
+  const categoryItems=categories.items||[];
+  showModal(`${modalHeader(b?'编辑轮播图':'新增轮播图','支持上传图片或 AI 生成首页横幅')}
+    <div class="modal-body">
+      <div class="form-panel">
+        <div class="form-row">
+          <div class="form-group"><label>标题 *</label><input id="fb-title" value="${esc(b?.title||'')}" placeholder="如：海南黄花梨专场"></div>
+          <div class="form-group"><label>排序值</label><input id="fb-order" type="number" value="${b?.sort_order||0}"></div>
+        </div>
+        <div class="form-group">
+          <label>点击轮播图后跳转</label>
+          <select id="fb-type" onchange="renderBannerLinkTarget()">
+            <option value="none" ${!b?.link_type||b?.link_type==='none'?'selected':''}>不跳转，仅展示图片</option>
+            <option value="product" ${b?.link_type==='product'?'selected':''}>跳转到商品详情</option>
+            <option value="category" ${b?.link_type==='category'?'selected':''}>跳转到分类商品列表</option>
+            <option value="url" ${b?.link_type==='url'?'selected':''}>跳转到外部链接</option>
+          </select>
+          <input type="hidden" id="fb-val" value="${esc(b?.link_value||'')}">
+          <div id="fb-link-target" class="link-target-box"></div>
+        </div>
+        <div class="form-group compact"><label>状态</label><div class="switch-row"><input id="fb-active" type="checkbox" ${b?.is_active!==false?'checked':''}><span>启用该轮播图</span></div></div>
+      </div>
+      <div class="form-panel soft">
+        <div class="section-title">图片素材</div>
+        <div class="form-group"><label>图片 URL</label><input id="fb-img" value="${esc(b?.image_url||'')}" placeholder="/assets/banners/xxx.jpg" oninput="previewBannerImage()"></div>
+        <div style="display:grid;grid-template-columns:1fr 240px;gap:16px;align-items:start">
+          <div style="border:1px solid var(--border);border-radius:10px;background:#fff;min-height:150px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <img id="fb-preview" src="${esc(b?.image_url||PLACEHOLDER_IMAGE)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:100%;height:180px;object-fit:cover">
+          </div>
+          <div class="tool-stack">
+            <label class="btn btn-secondary" style="justify-content:center;cursor:pointer">上传轮播图<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadBannerImage(this.files[0])"></label>
+            <button class="btn btn-primary" onclick="genBannerImage()">AI 生成横幅</button>
+            <button class="btn btn-secondary" onclick="genBannerCopy()">AI 生成文案</button>
+          </div>
+        </div>
+        <div id="fb-note" class="status-note"></div>
+      </div>
+      <div id="aiBannerResult" class="ai-result" style="min-height:54px">AI 文案会展示在这里，可复制到标题或运营文案中。</div>
+    </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">取消</button>
-    <button class="btn btn-primary" onclick="saveBanner('${id||''}')">保存</button></div>`);
+    <button class="btn btn-primary" onclick="saveBanner('${id||''}')">保存轮播图</button></div>`, 'modal-lg');
+  window.bannerProductOptions=productItems;
+  window.bannerCategoryOptions=categoryItems;
+  renderBannerLinkTarget();
+}
+function bannerOptionLabel(item,type){
+  if(type==='product')return `${item.name||'未命名商品'} ｜ ¥${item.price??0} ｜ 库存 ${item.stock??0}`;
+  return `${item.name||'未命名分类'} ｜ 排序 ${item.sort_order??0}`;
+}
+function renderBannerLinkTarget(){
+  const type=$('#fb-type')?.value||'none';
+  const current=$('#fb-val')?.value||'';
+  const box=$('#fb-link-target');if(!box)return;
+  if(type==='none'){
+    $('#fb-val').value='';
+    box.innerHTML='<div class="link-target-hint">用户点击这张轮播图时不会跳转，适合纯展示类活动图。</div>';
+    return;
+  }
+  if(type==='product'){
+    const items=window.bannerProductOptions||[];
+    box.innerHTML=`<div class="form-group"><label>选择商品</label><select id="fb-product-target" onchange="setBannerLinkValue(this.value)"><option value="">请选择商品</option>${items.map(p=>`<option value="${p.id}" ${current===p.id?'selected':''}>${esc(bannerOptionLabel(p,'product'))}</option>`).join('')}</select><div class="form-help">保存后，小程序可根据商品 ID 跳转到对应商品详情。</div></div>${items.length?'':'<div class="link-target-hint">暂无可选商品，请先在商品管理中新增商品。</div>'}`;
+    if(!items.some(p=>p.id===current))$('#fb-val').value='';
+    updateBannerLinkPreview();
+    return;
+  }
+  if(type==='category'){
+    const items=window.bannerCategoryOptions||[];
+    box.innerHTML=`<div class="form-group"><label>选择分类</label><select id="fb-category-target" onchange="setBannerLinkValue(this.value)"><option value="">请选择分类</option>${items.map(c=>`<option value="${c.id}" ${current===c.id?'selected':''}>${esc(bannerOptionLabel(c,'category'))}</option>`).join('')}</select><div class="form-help">保存后，小程序可根据分类 ID 展示该分类下的商品。</div></div>${items.length?'':'<div class="link-target-hint">暂无可选分类，请先在分类管理中新增分类。</div>'}`;
+    if(!items.some(c=>c.id===current))$('#fb-val').value='';
+    updateBannerLinkPreview();
+    return;
+  }
+  box.innerHTML=`<div class="form-group"><label>外部链接 URL</label><input id="fb-url-target" value="${esc(current)}" placeholder="https://example.com/page" oninput="setBannerLinkValue(this.value)"><div class="form-help">请填写以 http:// 或 https:// 开头的完整地址。</div></div>`;
+}
+function setBannerLinkValue(value){
+  $('#fb-val').value=(value||'').trim();
+  updateBannerLinkPreview();
+}
+function updateBannerLinkPreview(){
+  const type=$('#fb-type')?.value;
+  const val=$('#fb-val')?.value;
+  const box=$('#fb-link-target');if(!box||!type||!val||type==='url')return;
+  const items=type==='product'?(window.bannerProductOptions||[]):(window.bannerCategoryOptions||[]);
+  const found=items.find(x=>x.id===val);
+  const old=box.querySelector('.link-target-preview');if(old)old.remove();
+  if(found)box.insertAdjacentHTML('beforeend',`<div class="link-target-preview">已选择：<strong>${esc(found.name||'未命名')}</strong><span>${esc(val)}</span></div>`);
+}
+function previewBannerImage(){
+  const img=$('#fb-preview');if(img)img.src=$('#fb-img').value||PLACEHOLDER_IMAGE;
+}
+async function uploadBannerImage(file){
+  if(!file)return;
+  setNote('#fb-note','info','轮播图上传中...');
+  try{
+    const fd=new FormData();fd.append('file',file);
+    const d=await api('/admin/banners/upload',{method:'POST',body:fd});
+    $('#fb-img').value=d.url;previewBannerImage();
+    setNote('#fb-note','ok','轮播图已上传。');
+  }catch(e){setNote('#fb-note','err','上传失败：'+e.message);}
+}
+async function genBannerImage(){
+  const title=$('#fb-title').value.trim();if(!title){alert('请先填写标题');return;}
+  setNote('#fb-note','info','AI 正在生成横幅图片，请稍候...');
+  try{
+    const r=await api(`/home/banners/ai/generate_image?banner_title=${encodeURIComponent(title)}&banner_desc=${encodeURIComponent($('#fb-val').value||'')}`);
+    if(r.error)throw new Error(r.error);
+    if(!r.image_url)throw new Error('生成失败，请重试');
+    $('#fb-img').value=r.image_url;previewBannerImage();
+    setNote('#fb-note','ok','AI 横幅已生成并填入图片 URL。');
+  }catch(e){setNote('#fb-note','err','生成失败：'+e.message);}
 }
 async function genBannerCopy(){
-  const el=$('#aiBannerResult');el.className='ai-result loading';el.textContent='AI 创作中...';
-  const r=await api('/admin/ai/chat',{method:'POST',body:JSON.stringify({message:'为小吉微商城（海南工艺品，工艺品/木质/收藏）生成3个banner营销slogan，每个不超过10个字'})});
-  el.className='ai-result';el.textContent=r.message||'';
+  const el=$('#aiBannerResult');el.className='ai-result loading';el.textContent='AI streaming...';
+  try{
+    const text=await streamText('/admin/ai/chat/stream',{method:'POST',body:JSON.stringify({message:'Generate 3 Chinese banner slogans for a craft store, each under 10 Chinese characters.'})},t=>{
+      el.className='ai-result loading';
+      el.textContent=t||'AI streaming...';
+    });
+    el.className='ai-result';el.textContent=text||'Done';
+  }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
 }
+
 async function saveBanner(id){
+  if(!$('#fb-title').value.trim()){alert('请填写轮播图标题');return;}
+  const linkType=$('#fb-type').value;
+  const linkValue=$('#fb-val').value.trim();
+  if((linkType==='product'||linkType==='category')&&!linkValue){alert(linkType==='product'?'请选择要跳转的商品':'请选择要跳转的分类');return;}
+  if(linkType==='url'&&linkValue&&!/^https?:\/\//i.test(linkValue)){alert('外部链接请填写以 http:// 或 https:// 开头的完整地址');return;}
   const payload={title:$('#fb-title').value,link_type:$('#fb-type').value,
-    link_value:$('#fb-val').value,sort_order:parseInt($('#fb-order').value)||0,
-    image_url:$('#fb-img').value,is_active:true};
+    link_value:linkValue,sort_order:parseInt($('#fb-order').value)||0,
+    image_url:$('#fb-img').value,is_active:$('#fb-active').checked};
   const method=id?'PUT':'POST';
   const path=id?`/admin/banners/${id}`:'/admin/banners/';
-  await api(path,{method,body:JSON.stringify(payload)});
-  closeModal();renderBanners();
+  try{await api(path,{method,body:JSON.stringify(payload)});closeModal();renderBanners();}
+  catch(e){alert('保存失败：'+e.message);}
 }
 async function delBanner(id){if(!confirm('确定删除？'))return;await api(`/admin/banners/${id}`,{method:'DELETE'});renderBanners();}
 
 // ========== 订单管理 ==========
-let oPage=1,oStatus='';
-async function renderOrders(){
-  const d=await api(`/admin/orders/?page=${oPage}&page_size=10&status=${oStatus}`);
+let oPage=1,oStatus='all',oKw='';
+async function renderOrders(kw){
+  if(kw!==undefined){oKw=(kw||'').trim();oPage=1;}
+  const statusParam=oStatus&&oStatus!=='all'?`&status=${encodeURIComponent(oStatus)}`:'';
+  const keywordParam=oKw?`&keyword=${encodeURIComponent(oKw)}`:'';
+  const d=await api(`/admin/orders?page=${oPage}&page_size=10${statusParam}${keywordParam}`);
   state.orders=d.items||[];
   const total=d.total||0;
-  const tabs=['all,全部','pending,待支付','paid,待发货','shipped,待收货','completed,已完成','refunded,已退款'];
+  const tabs=[['all','全部'],['pending','待支付'],['paid','待发货'],['shipped','待收货'],['received','已收货'],['completed','已完成'],['refunded','已退款'],['cancelled','已取消']];
   const html=`<div class="card">
-    <div class="card-header"><h3>📦 订单列表</h3><button class="btn btn-secondary" onclick="exportOrders()">导出订单</button></div>
+    <div class="card-header"><h3>📦 订单列表</h3><div class="card-actions"><button class="btn btn-secondary" onclick="renderOrders()">刷新</button><button class="btn btn-secondary" onclick="exportOrders()">导出订单</button></div></div>
     <div class="tabs">
       ${tabs.map(([v,t])=>`<div class="tab ${oStatus===v?'active':''}" onclick="oStatus='${v}';oPage=1;renderOrders()">${t}</div>`).join('')}
+    </div>
+    <div class="search-bar">
+      <input id="orderSearch" placeholder="搜索订单号 / 收货人 / 手机 / 地址 / 商品..." value="${esc(oKw)}" onkeydown="if(event.key==='Enter')renderOrders(this.value)">
+      <button class="btn btn-secondary" onclick="renderOrders($('#orderSearch').value)">搜索</button>
+      ${oKw?`<button class="btn btn-secondary" onclick="renderOrders('')">清空</button>`:''}
     </div>
     <div class="ai-box" style="margin-bottom:16px"><h4>🤖 AI 客服</h4>
     <div style="display:flex;gap:8px"><input id="aiOrderQ" placeholder="输入用户问题，如：退款规则是什么？" style="flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:8px"><button class="btn btn-primary btn-sm" onclick="askAIOrder()">提问</button></div>
     <div id="aiOrderResult" class="ai-result" style="margin-top:10px;display:none"></div></div>
-    <table class="table">
-      <thead><tr><th>订单号</th><th>商品</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>订单号</th><th>收货人</th><th>收货手机号</th><th>收货地址</th><th>商品</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
       <tbody>
         ${state.orders.map(o=>`<tr>
-          <td style="font-size:12px;color:var(--text2)">${o.id.slice(0,18)}...</td>
-          <td>${(o.items||[]).map(i=>i.name||'商品').join(', ')}</td>
-          <td style="font-weight:600;color:var(--red)">¥${o.total_amount}</td>
+          <td style="font-size:12px;color:var(--text2)">${esc(o.order_no||o.id).slice(0,22)}</td>
+          <td>${esc(o.receiver_name||'-')}</td>
+          <td style="font-size:12px;color:var(--text2)">${esc(o.receiver_phone||'-')}</td>
+          <td style="max-width:240px;white-space:normal;line-height:1.5;color:var(--text2);font-size:12px">${esc(o.shipping_address||'-')}</td>
+          <td>${(o.items||[]).filter(Boolean).map(i=>esc(i.name||'商品')+' x'+(i.quantity||1)).join('<br>')||'-'}</td>
+          <td style="font-weight:600;color:var(--red)">${money(o.total_amount)}</td>
           <td>${statusBadge(o.status)}</td>
           <td style="font-size:12px">${fmtDateTime(o.created_at)}</td>
-          <td><button class="btn btn-secondary btn-sm" onclick="viewOrder('${o.id}')">详情</button></td>
+          <td><div class="table-actions">
+            ${o.status==='paid'?`<button class="btn btn-primary btn-sm" onclick="shipOrder('${o.id}')">发货</button>`:''}
+            ${(o.status==='pending'||o.status==='paid')?`<button class="btn btn-secondary btn-sm" onclick="cancelOrder('${o.id}')">取消</button>`:''}
+            ${(o.status==='paid'||o.status==='shipped')?`<button class="btn btn-danger btn-sm" onclick="refundOrder('${o.id}')">退款</button>`:''}
+            <button class="btn btn-secondary btn-sm" onclick="viewOrder('${o.id}')">详情</button>
+          </div></td>
         </tr>`).join('')}
-        ${!state.orders.length?'<tr><td colspan="6"><div class="empty"><div class=empty-icon>📦</div>暂无订单</div></td></tr>':''}
+        ${!state.orders.length?emptyRow(9,'📦',oKw?'没有匹配的订单':'暂无订单',oKw?'换个关键词或状态试试。':'当用户在小程序下单后，会在这里显示订单、收货人、手机号、收货地址并支持发货、退款、查看详情。'):''}
       </tbody>
-    </table>
+    </table></div>
     <div class="pagination">
       <button ${oPage<=1?'disabled':''} onclick="oPage--;renderOrders()">上一页</button>
       <span>第 ${oPage} / ${Math.max(1,Math.ceil(total/10))} 页</span>
@@ -459,35 +1021,97 @@ async function renderOrders(){
   </div>`;
   $('#mainContent').innerHTML=html;
 }
+async function shipOrder(id){
+  if(!confirm('确认发货？'))return;
+  const r=await api(`/admin/orders/${id}/status?status=shipped`,{method:'PUT'}).catch(()=>null);
+  if(r&&r.success){alert('发货成功');renderOrders();}
+  else{alert('发货失败，请重试');}
+}
+async function refundOrder(id){
+  if(!confirm('确认退款？此操作不可撤销！'))return;
+  const r=await api(`/admin/orders/${id}/status?status=refunded`,{method:'PUT'}).catch(()=>null);
+  if(r&&r.success){alert('退款成功');renderOrders();}
+  else{alert('退款失败，请重试');}
+}
+async function cancelOrder(id){
+  if(!confirm('确认取消该订单？'))return;
+  const r=await api(`/admin/orders/${id}/status?status=cancelled`,{method:'PUT'}).catch(e=>({error:e.message}));
+  if(r&&r.success){alert('订单已取消');renderOrders();}
+  else{alert('取消失败：'+(r.error||'请重试'));}
+}
 async function askAIOrder(){
   const q=$('#aiOrderQ').value.trim();if(!q)return;
-  const el=$('#aiOrderResult');el.style.display='block';el.className='ai-result loading';el.textContent='AI 思考中...';
-  const r=await api('/admin/ai/chat',{method:'POST',body:JSON.stringify({message:`你是小吉微商城客服，用户问：${q}。请用专业友好的语气回答。`})});
-  el.className='ai-result';el.textContent=r.message||'处理完毕';
+  const el=$('#aiOrderResult');el.style.display='block';el.className='ai-result loading';el.textContent='AI streaming...';
+  try{
+    const text=await streamText('/admin/ai/chat/stream',{method:'POST',body:JSON.stringify({message:`你是小吉微商城客服，用户问：${q}。请用专业友好的语气回答。`})},t=>{
+      el.className='ai-result loading';
+      el.textContent=t||'AI streaming...';
+    });
+    el.className='ai-result';el.textContent=text||'Done';
+  }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
 }
+
 function viewOrder(id){
   const o=state.orders.find(x=>x.id===id);
   if(!o)return;
-  showModal(`<h2>订单详情</h2>
-    <div style="font-size:13px;line-height:2">
-      <p><strong>订单号：</strong>${o.id}</p>
-      <p><strong>金额：</strong><span style="color:var(--red)">¥${o.total_amount}</span></p>
-      <p><strong>状态：</strong>${statusBadge(o.status)}</p>
-      <p><strong>下单时间：</strong>${fmtDateTime(o.created_at)}</p>
-      <p><strong>商品：</strong>${(o.items||[]).map(i=>`${i.name} x${i.quantity}`).join(', ')}</p>
+  showModal(`${modalHeader('订单详情', o.order_no||o.id)}
+    <div class="modal-body">
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-label">实付金额</div><div class="detail-value" style="color:var(--red)">${money(o.total_amount)}</div></div>
+        <div class="detail-item"><div class="detail-label">订单状态</div><div class="detail-value">${statusBadge(o.status)}</div></div>
+        <div class="detail-item"><div class="detail-label">下单时间</div><div class="detail-value">${fmtDateTime(o.created_at)}</div></div>
+      </div>
+      <div class="form-panel">
+        <div class="section-title">购买用户</div>
+        <div style="line-height:1.8">
+          <div><strong>用户昵称：</strong>${esc(o.user_nickname||'微信用户')}</div>
+          <div><strong>用户手机号：</strong>${esc(o.user_phone||'未绑定')}</div>
+          <div><strong>会员等级：</strong>${esc(o.user_member_level||'-')}</div>
+          <div><strong>用户ID：</strong><span style="font-size:12px;color:var(--text2)">${esc(o.user_id||'-')}</span></div>
+          <div><strong>OpenID：</strong><span style="font-size:12px;color:var(--text2)">${esc(o.user_openid||'-')}</span></div>
+        </div>
+      </div>
+      <div class="form-panel">
+        <div class="section-title">收货信息</div>
+        <div style="line-height:1.8">
+          <div><strong>收货人：</strong>${esc(o.receiver_name||'-')} ${esc(o.receiver_phone||'')}</div>
+          <div><strong>地址：</strong>${esc(o.shipping_address||'-')}</div>
+          <div><strong>备注：</strong>${esc(o.buyer_note||'-')}</div>
+        </div>
+      </div>
+      <div class="form-panel">
+        <div class="section-title">商品明细</div>
+        <table class="table"><thead><tr><th>商品</th><th>数量</th><th>单价</th></tr></thead><tbody>
+          ${(o.items||[]).filter(Boolean).map(i=>`<tr><td>${esc(i.name||'商品')}</td><td>${i.quantity||1}</td><td>${money(i.price)}</td></tr>`).join('')||'<tr><td colspan="3">暂无商品明细</td></tr>'}
+        </tbody></table>
+      </div>
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">关闭</button></div>`);
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">关闭</button></div>`, 'modal-md');
 }
-async function exportOrders(){alert('导出功能开发中');}
+async function exportOrders(){
+  if(!state.orders.length){alert('当前没有可导出的订单');return;}
+  const rows=[['订单号','收货人','手机','金额','状态','下单时间','地址']];
+  state.orders.forEach(o=>rows.push([o.order_no||o.id,o.receiver_name||'',o.receiver_phone||'',o.total_amount||0,o.status||'',fmtDateTime(o.created_at),o.shipping_address||'']));
+  const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='orders.csv';a.click();URL.revokeObjectURL(a.href);
+}
 
 // ========== 优惠券管理 ==========
-let cPage=1;
-async function renderCoupons(){
-  const d=await api(`/admin/coupons/?page=${cPage}&page_size=10`);
+let couponKw='';
+cPage=1;
+async function renderCoupons(kw){
+  if(kw!==undefined){couponKw=(kw||'').trim();cPage=1;}
+  const keywordParam=couponKw?`&keyword=${encodeURIComponent(couponKw)}`:'';
+  const d=await api(`/admin/coupons/?page=${cPage}&page_size=10${keywordParam}`);
   state.coupons=d.items||[];
   const total=d.total||0;
   const html=`<div class="card">
     <div class="card-header"><h3>🎫 优惠券列表</h3><button class="btn btn-primary" onclick="openCouponModal()">+ 新建优惠券</button></div>
+    <div class="search-bar">
+      <input id="couponSearch" placeholder="搜索优惠券名称 / 类型..." value="${esc(couponKw)}" onkeydown="if(event.key==='Enter')renderCoupons(this.value)">
+      <button class="btn btn-secondary" onclick="renderCoupons($('#couponSearch').value)">搜索</button>
+      ${couponKw?`<button class="btn btn-secondary" onclick="renderCoupons('')">清空</button>`:''}
+    </div>
     <table class="table">
       <thead><tr><th>名称</th><th>类型</th><th>优惠</th><th>领取/总量</th><th>有效期</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>
@@ -504,7 +1128,7 @@ async function renderCoupons(){
             <button class="btn btn-danger btn-sm" onclick="delCoupon('${c.id}')">删除</button>
           </td>
         </tr>`).join('')}
-        ${!state.coupons.length?'<tr><td colspan="7"><div class="empty"><div class=empty-icon>🎫</div>暂无优惠券</div></td></tr>':''}
+        ${!state.coupons.length?emptyRow(7,'🎫',couponKw?'没有匹配的优惠券':'暂无优惠券',couponKw?'换个关键词试试。':'点击右上角新建优惠券。'):''}
       </tbody>
     </table>
     <div class="pagination">
@@ -517,27 +1141,39 @@ async function renderCoupons(){
 }
 async function openCouponModal(id){
   const c=id?state.coupons.find(x=>x.id===id):null;
-  showModal(`<h2>${c?'编辑':'新建'}优惠券</h2>
-    <div class="form-group"><label>优惠券名称</label><input id="fc-name" value="${c?.name||''}"></div>
-    <div class="form-row"><div class="form-group"><label>类型</label><select id="fc-type"><option value="discount" ${c?.type==='discount'?'selected':''}>满减券</option><option value="full_down" ${c?.type==='full_down'?'selected':''}>满折券</option></select></div>
-    <div class="form-group"><label>优惠值</label><input id="fc-disc" type="number" value="${c?.discount_amount||''}" placeholder="满减填金额，折扣填折扣率"></div></div>
-    <div class="form-row"><div class="form-group"><label>最低消费（元）</label><input id="fc-min" type="number" value="${c?.min_order_amount||''}"></div>
-    <div class="form-group"><label>发放总量</label><input id="fc-total" type="number" value="${c?.total_count||100}"></div></div>
-    <div class="form-row"><div class="form-group"><label>开始时间</label><input id="fc-start" type="date" value="${c?.start_time?.slice(0,10)||''}"></div>
-    <div class="form-group"><label>结束时间</label><input id="fc-end" type="date" value="${c?.end_time?.slice(0,10)||''}"></div></div>
+  showModal(`${modalHeader(c?'编辑优惠券':'新建优惠券','设置优惠规则、发放数量和有效期')}
+    <div class="modal-body">
+      <div class="form-panel">
+        <div class="form-group"><label>优惠券名称 *</label><input id="fc-name" value="${esc(c?.name||'')}" placeholder="如：端午满减券"></div>
+        <div class="form-row">
+          <div class="form-group"><label>类型</label><select id="fc-type"><option value="discount" ${c?.type==='discount'?'selected':''}>满减券</option><option value="fixed" ${c?.type==='fixed'?'selected':''}>固定金额券</option><option value="full_down" ${c?.type==='full_down'?'selected':''}>折扣券</option></select></div>
+          <div class="form-group"><label>优惠值</label><input id="fc-disc" type="number" min="0" step="0.01" value="${c?.discount_amount||''}" placeholder="满减填金额，折扣填折扣率"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>最低消费（元）</label><input id="fc-min" type="number" min="0" step="0.01" value="${c?.min_order_amount||''}"></div>
+          <div class="form-group"><label>发放总量</label><input id="fc-total" type="number" min="1" value="${c?.total_count||100}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>开始时间</label><input id="fc-start" type="date" value="${c?.start_time?.slice(0,10)||''}"></div>
+          <div class="form-group"><label>结束时间</label><input id="fc-end" type="date" value="${c?.end_time?.slice(0,10)||''}"></div>
+        </div>
+        <div class="form-group compact"><label>状态</label><div class="switch-row"><input id="fc-active-coupon" type="checkbox" ${c?.is_active!==false?'checked':''}><span>启用该优惠券</span></div></div>
+      </div>
+    </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">取消</button>
-    <button class="btn btn-primary" onclick="saveCoupon('${id||''}')">保存</button></div>`);
+    <button class="btn btn-primary" onclick="saveCoupon('${id||''}')">保存优惠券</button></div>`, 'modal-md');
 }
 async function saveCoupon(id){
+  if(!$('#fc-name').value.trim()){alert('请填写优惠券名称');return;}
   const payload={name:$('#fc-name').value,type:$('#fc-type').value,
     discount_amount:parseFloat($('#fc-disc').value)||0,
     min_order_amount:parseFloat($('#fc-min').value)||0,
     total_count:parseInt($('#fc-total').value)||100,
-    start_time:$('#fc-start').value,end_time:$('#fc-end').value,is_active:true};
+    start_time:$('#fc-start').value,end_time:$('#fc-end').value,is_active:$('#fc-active-coupon').checked};
   const method=id?'PUT':'POST';
   const path=id?`/admin/coupons/${id}`:'/admin/coupons/';
-  await api(path,{method,body:JSON.stringify(payload)});
-  closeModal();renderCoupons();
+  try{await api(path,{method,body:JSON.stringify(payload)});closeModal();renderCoupons();}
+  catch(e){alert('保存失败：'+e.message);}
 }
 async function pushCoupon(id){
   if(!confirm('AI将分析高价值用户并推荐推送名单，确定执行？'))return;
@@ -549,59 +1185,105 @@ async function delCoupon(id){if(!confirm('确定删除？'))return;await api(`/a
 
 // ========== 用户管理 ==========
 let uPage=1,uKw='';
-async function renderUsers(){
-  const d=await api(`/admin/users/?page=${uPage}&page_size=10&keyword=${uKw}`);
+async function renderUsers(kw){
+  if(kw!==undefined){uKw=(kw||'').trim();uPage=1;}
+  const d=await api(`/admin/users?page=${uPage}&page_size=10&keyword=${encodeURIComponent(uKw||'')}`);
   state.users=d.items||[];
   const total=d.total||0;
   const html=`<div class="card">
-    <div class="card-header"><h3>👥 用户列表</h3><button class="btn btn-secondary" onclick="runChurnWarning()">🤖 流失预警</button></div>
+    <div class="card-header"><h3>👥 用户列表</h3><div class="card-actions"><button class="btn btn-secondary" onclick="renderUsers()">刷新</button><button class="btn btn-secondary" onclick="runChurnWarning()">🤖 流失预警</button></div></div>
     <div class="search-bar">
-      <input placeholder="搜索昵称/手机号..." value="${uKw}" onkeydown="if(event.key==='Enter')renderUsers(this.value)">
-      <button class="btn btn-secondary" onclick="renderUsers(this.previousElementSibling.value)">搜索</button>
+      <input id="userSearch" placeholder="搜索昵称 / 手机号..." value="${esc(uKw)}" onkeydown="if(event.key==='Enter')renderUsers(this.value)">
+      <button class="btn btn-secondary" onclick="renderUsers($('#userSearch').value)">搜索</button>
+      ${uKw?`<button class="btn btn-secondary" onclick="renderUsers('')">清空</button>`:''}
     </div>
     <div id="churnResult" class="ai-box" style="display:none;margin-bottom:16px"><h4>⚠️ 流失预警</h4><div id="churnContent" class="ai-result"></div></div>
-    <table class="table">
-      <thead><tr><th>用户</th><th>手机</th><th>积分</th><th>累计消费</th><th>订单数</th><th>注册时间</th><th>操作</th></tr></thead>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>用户</th><th>手机</th><th>可用积分</th><th>累计消费</th><th>订单数</th><th>注册时间</th><th>操作</th></tr></thead>
       <tbody>
         ${state.users.map(u=>`<tr>
-          <td><div style="display:flex;align-items:center;gap:8px"><div style="width:36px;height:36px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px">${(u.nickname||'?')[0].toUpperCase()}</div><div><div style="font-weight:500">${u.nickname||'用户'+u.id}</div></div></div></td>
-          <td>${u.phone||'未绑定'}</td>
-          <td>${u.points||0}</td>
-          <td style="color:var(--red);font-weight:600">¥${u.total_spent||0}</td>
+          <td><div style="display:flex;align-items:center;gap:8px"><div style="width:36px;height:36px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px">${esc((u.nickname||'?')[0]).toUpperCase()}</div><div><div style="font-weight:500">${esc(u.nickname||'用户'+u.id)}</div><div style="font-size:12px;color:var(--text2)">${esc(u.member_level||'normal')}</div></div></div></td>
+          <td>${esc(u.phone||'未绑定')}</td>
+          <td>${u.available_points??u.points??0}</td>
+          <td style="color:var(--red);font-weight:600">${money(u.total_spent||0)}</td>
           <td>${u.order_count||0}</td>
           <td style="font-size:12px">${fmtDate(u.created_at)}</td>
-          <td><button class="btn btn-secondary btn-sm" onclick="viewUserProfile('${u.id}')">画像</button></td>
+          <td><div class="table-actions"><button class="btn btn-secondary btn-sm" onclick="viewUserProfile('${u.id}')">画像</button><button class="btn btn-secondary btn-sm" onclick="openPointsModal('${u.id}')">调积分</button></div></td>
         </tr>`).join('')}
-        ${!state.users.length?'<tr><td colspan="7"><div class="empty"><div class=empty-icon>👥</div>暂无用户</div></td></tr>':''}
+        ${!state.users.length?emptyRow(7,'👥',uKw?'没有匹配的用户':'暂无用户',uKw?'换个昵称或手机号试试。':'当小程序用户完成登录后，会在这里显示用户资料、积分和消费信息。'):''}
       </tbody>
-    </table>
+    </table></div>
     <div class="pagination">
-      <button ${uPage<=1?'disabled':''} onclick="uPage--;renderUsers('${uKw}')">上一页</button>
+      <button ${uPage<=1?'disabled':''} onclick="uPage--;renderUsers()">上一页</button>
       <span>第 ${uPage} / ${Math.max(1,Math.ceil(total/10))} 页</span>
-      <button ${uPage*10>=total?'disabled':''} onclick="uPage++;renderUsers('${uKw}')">下一页</button>
+      <button ${uPage*10>=total?'disabled':''} onclick="uPage++;renderUsers()">下一页</button>
     </div>
   </div>`;
   $('#mainContent').innerHTML=html;
 }
 async function runChurnWarning(){
   const el=$('#churnResult');el.style.display='block';
-  const content=$('#churnContent');content.className='ai-result loading';content.textContent='AI 正在分析用户流失风险，请稍候...';
-  const r=await api('/admin/ai/chat',{method:'POST',body:JSON.stringify({message:'基于以下用户数据，分析哪些用户有流失风险（7天未登录或长时间无消费），给出TOP5高风险用户及其原因：'+JSON.stringify(state.users.slice(0,20))})});
-  content.className='ai-result';content.textContent=r.message||'分析完成';
+  const content=$('#churnContent');content.className='ai-result loading';content.textContent='AI streaming...';
+  try{
+    const text=await streamText('/admin/ai/chat/stream',{method:'POST',body:JSON.stringify({message:'基于以下用户数据，分析哪些用户有流失风险（7天未登录或长时间无消费），给出TOP5高风险用户及其原因：'+JSON.stringify(state.users.slice(0,20))})},t=>{
+      content.className='ai-result loading';
+      content.textContent=t||'AI streaming...';
+    });
+    content.className='ai-result';content.textContent=text||'Done';
+  }catch(e){content.className='ai-result';content.textContent='AI request failed: '+e.message;}
 }
+
 async function viewUserProfile(id){
   const u=state.users.find(x=>x.id==id);if(!u)return;
   const points=await api(`/admin/users/${id}/points`).catch(()=>({points:u.points||0}));
-  showModal(`<h2>用户画像</h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:14px">
-      <div style="background:var(--bg);padding:16px;border-radius:10px"><div style="color:var(--text2);font-size:12px">昵称</div><div style="font-weight:600;margin-top:4px">${u.nickname||'用户'+u.id}</div></div>
-      <div style="background:var(--bg);padding:16px;border-radius:10px"><div style="color:var(--text2);font-size:12px">手机</div><div style="font-weight:600;margin-top:4px">${u.phone||'未绑定'}</div></div>
-      <div style="background:var(--bg);padding:16px;border-radius:10px"><div style="color:var(--text2);font-size:12px">积分</div><div style="font-weight:600;margin-top:4px">${points.points||0}</div></div>
-      <div style="background:var(--bg);padding:16px;border-radius:10px"><div style="color:var(--text2);font-size:12px">累计消费</div><div style="font-weight:600;margin-top:4px;color:var(--red)">¥${u.total_spent||0}</div></div>
-      <div style="background:var(--bg);padding:16px;border-radius:10px"><div style="color:var(--text2);font-size:12px">订单数</div><div style="font-weight:600;margin-top:4px">${u.order_count||0}</div></div>
-      <div style="background:var(--bg);padding:16px;border-radius:10px"><div style="color:var(--text2);font-size:12px">注册时间</div><div style="font-weight:600;margin-top:4px">${fmtDate(u.created_at)}</div></div>
+  showModal(`${modalHeader('用户画像', esc(u.nickname||'用户'+u.id))}
+    <div class="modal-body">
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-label">手机</div><div class="detail-value">${esc(u.phone||'未绑定')}</div></div>
+        <div class="detail-item"><div class="detail-label">可用积分</div><div class="detail-value">${points.points??u.available_points??0}</div></div>
+        <div class="detail-item"><div class="detail-label">会员等级</div><div class="detail-value">${esc(u.member_level||'normal')}</div></div>
+        <div class="detail-item"><div class="detail-label">累计消费</div><div class="detail-value" style="color:var(--red)">${money(u.total_spent||0)}</div></div>
+        <div class="detail-item"><div class="detail-label">订单数</div><div class="detail-value">${u.order_count||0}</div></div>
+        <div class="detail-item"><div class="detail-label">注册时间</div><div class="detail-value">${fmtDate(u.created_at)}</div></div>
+      </div>
+      <div class="ai-box"><h4>AI 运营建议</h4><button class="btn btn-secondary btn-sm" onclick="analyzeUser('${u.id}')">生成用户运营建议</button><div id="userAiResult" class="ai-result" style="margin-top:10px;min-height:54px"></div></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">关闭</button></div>`);
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">关闭</button><button class="btn btn-primary" onclick="openPointsModal('${u.id}')">调整积分</button></div>`, 'modal-md');
+}
+async function analyzeUser(id){
+  const u=state.users.find(x=>x.id==id);if(!u)return;
+  const el=$('#userAiResult');el.className='ai-result loading';el.textContent='AI streaming...';
+  try{
+    const text=await streamText('/admin/ai/chat/stream',{method:'POST',body:JSON.stringify({message:'请基于这个用户画像给出运营建议，包括复购、优惠券和客服触达：'+JSON.stringify(u)})},t=>{
+      el.className='ai-result loading';
+      el.textContent=t||'AI streaming...';
+    });
+    el.className='ai-result';el.textContent=text||'Done';
+  }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
+}
+
+function openPointsModal(id){
+  const u=state.users.find(x=>x.id==id);if(!u)return;
+  showModal(`${modalHeader('调整用户积分', esc(u.nickname||u.id))}
+    <div class="modal-body">
+      <div class="form-panel">
+        <div class="detail-item" style="margin-bottom:14px"><div class="detail-label">当前可用积分</div><div class="detail-value">${u.available_points??u.points??0}</div></div>
+        <div class="form-group"><label>积分变化值</label><input id="points-delta" type="number" placeholder="增加填正数，扣减填负数"></div>
+        <div class="form-help">例如增加 100 分填写 100，扣减 50 分填写 -50。</div>
+      </div>
+      <div id="points-note" class="status-note"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveUserPoints('${id}')">确认调整</button></div>`, 'modal-md');
+}
+async function saveUserPoints(id){
+  const delta=parseInt($('#points-delta').value);
+  if(!delta){setNote('#points-note','err','请填写非 0 的积分变化值。');return;}
+  setNote('#points-note','info','正在调整积分...');
+  try{
+    await api(`/admin/users/${id}/points?points_delta=${delta}`,{method:'PUT'});
+    setNote('#points-note','ok','积分已调整。');
+    setTimeout(()=>{closeModal();renderUsers();},500);
+  }catch(e){setNote('#points-note','err','调整失败：'+e.message);}
 }
 
 // ========== 智能助手 ==========
@@ -635,26 +1317,28 @@ async function sendAI(){
   aiHistory.push({role:'user',content:msg});
   const msgsEl=$('#aiMsgs');
   msgsEl.innerHTML+=`<div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
-    <div style="font-size:14px;line-height:1.7;text-align:right">${msg}</div>
-    <div style="width:32px;height:32px;background:var(--bg);color:var(--text2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">👤</div></div>`;
+    <div style="font-size:14px;line-height:1.7;text-align:right">${esc(msg)}</div>
+    <div style="width:32px;height:32px;background:var(--bg);color:var(--text2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">U</div></div>`;
   msgsEl.innerHTML+=`<div id="aiTyping" style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:10px">
-    <div style="width:32px;height:32px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">🤖</div>
-    <div style="font-size:14px;color:var(--text2);font-style:italic">思考中...</div></div>`;
+    <div style="width:32px;height:32px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">AI</div>
+    <div id="aiTypingText" style="font-size:14px;line-height:1.7;white-space:pre-wrap;color:var(--text2);font-style:italic">AI streaming...</div></div>`;
   input.value='';msgsEl.scrollTop=msgsEl.scrollHeight;
   try{
-    const r=await api('/admin/ai/chat',{method:'POST',body:JSON.stringify({message:msg,context:aiHistory.slice(0,-1).map(m=>`${m.role}: ${m.content}`).join('\n')})});
-    const text=r.message||'处理完毕';
-    aiHistory.push({role:'assistant',content:text});
-    const typing=$('#aiTyping');if(typing)typing.remove();
-    msgsEl.innerHTML+=`<div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:10px">
-      <div style="width:32px;height:32px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">🤖</div>
-      <div style="font-size:14px;line-height:1.7;white-space:pre-wrap">${text}</div></div>`;
+    const text=await streamText('/admin/ai/chat/stream',{method:'POST',body:JSON.stringify({message:msg,context:aiHistory.slice(0,-1).map(m=>`${m.role}: ${m.content}`).join('\n')})},t=>{
+      const box=$('#aiTypingText');
+      if(box){box.style.color='var(--text)';box.style.fontStyle='normal';box.textContent=t||'AI streaming...';}
+      msgsEl.scrollTop=msgsEl.scrollHeight;
+    });
+    aiHistory.push({role:'assistant',content:text||'Done'});
+    const box=$('#aiTypingText');if(box){box.textContent=text||'Done';box.style.color='var(--text)';box.style.fontStyle='normal';}
+    const typing=$('#aiTyping');if(typing)typing.removeAttribute('id');
     msgsEl.scrollTop=msgsEl.scrollHeight;
   }catch(e){
     const typing=$('#aiTyping');if(typing)typing.remove();
-    msgsEl.innerHTML+=`<div style="padding:12px 0;color:var(--red);font-size:14px">请求失败：${e.message}</div>`;
+    msgsEl.innerHTML+=`<div style="padding:12px 0;color:var(--red);font-size:14px">AI request failed: ${esc(e.message)}</div>`;
   }
 }
+
 function clearAI(){aiHistory=[];renderAI();}
 
 // ---------- 初始化 ----------
@@ -662,3 +1346,4 @@ if(TOKEN)showApp();
 </script>
 </body>
 </html>
+
