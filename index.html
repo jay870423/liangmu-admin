@@ -365,6 +365,7 @@ function showApp(){
 function switchTab(tab,el){
   CUR_PAGE=tab;
   $$('.nav-item').forEach(e=>e.classList.remove('active'));
+  if(!el)el=[...$$('.nav-item')].find(n=>n.getAttribute('onclick')?.includes(`'${tab}'`));
   if(el)el.classList.add('active');
   const titles={dashboard:'📊 首页看板',products:'🏷️ 商品管理',categories:'📂 分类管理',banners:'🎯 轮播图管理',orders:'📦 订单管理',coupons:'🎫 优惠券管理',users:'👥 用户管理',ai:'🤖 智能助手'};
   $('#pageTitle').textContent=titles[tab]||tab;
@@ -381,7 +382,10 @@ function switchTab(tab,el){
 // ========== 首页看板 ==========
 async function renderDashboard(){
   const d=await api('/admin/stats');
-  const stats=[{label:'今日订单',val:d.today_orders||0,sub:'待处理 '+(d.pending_orders||0)+' 单',cls:''},
+  const paidOrders=d.paid_orders ?? d.pending_orders ?? 0;
+  const pendingPaymentOrders=d.pending_payment_orders || 0;
+  const lowStock=d.low_stock_products||[];
+  const stats=[{label:'今日订单',val:d.today_orders||0,sub:'待发货 '+paidOrders+' 单',cls:''},
     {label:'今日销售额',val:'¥'+((d.today_sales||0).toFixed(0)),sub:'元',cls:'blue'},
     {label:'新增用户',val:d.today_users||0,sub:'人',cls:'orange'},
     {label:'商品总数',val:d.total_products||0,sub:'在售',cls:''}];
@@ -391,9 +395,27 @@ async function renderDashboard(){
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
     <div class="card">
-      <div class="card-header"><h3>⏳ 待处理事项</h3></div>
-      <p>${d.pending_orders||0} 个待发货订单</p>
-      ${(d.low_stock_products||[]).length?`<div style="margin-top:12px">${d.low_stock_products.map(p=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>${p.name}</span><span style="color:var(--red)">库存 ${p.stock}</span></div>`).join('')}</div>`:''}
+      <div class="card-header">
+        <h3>⏳ 待处理事项</h3>
+        <div class="card-actions"><button class="btn btn-secondary btn-sm" onclick="renderDashboard()">刷新</button></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div onclick="openPendingShipments()" style="border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;background:#f8fafc">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px">待发货订单</div>
+          <div style="font-size:26px;font-weight:700;color:var(--blue)">${paidOrders}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">点击进入订单管理</div>
+        </div>
+        <div onclick="openPendingPayments()" style="border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;background:#f8fafc">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px">待支付订单</div>
+          <div style="font-size:26px;font-weight:700;color:var(--orange)">${pendingPaymentOrders}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">点击查看待支付</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <strong>低库存商品</strong>
+        <button class="btn btn-secondary btn-sm" onclick="openProductsList()">全部商品</button>
+      </div>
+      ${lowStock.length?`<div>${lowStock.map(p=>`<div onclick="openLowStockProduct('${p.id}')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer"><span>${esc(p.name)}</span><span style="color:var(--red);font-weight:600">库存 ${p.stock}</span></div>`).join('')}</div>`:'<div class="empty compact"><div class="empty-icon">✅</div><div>暂无低库存商品</div><div style="font-size:12px;margin-top:8px">库存低于 10 的商品会显示在这里。</div></div>'}
     </div>
 
     <div class="card">
@@ -402,6 +424,28 @@ async function renderDashboard(){
     </div>
   </div>`;
   $('#mainContent').innerHTML=html;
+}
+function openPendingShipments(){
+  oStatus='paid';oPage=1;oKw='';
+  switchTab('orders');
+}
+function openPendingPayments(){
+  oStatus='pending';oPage=1;oKw='';
+  switchTab('orders');
+}
+function openProductsList(){
+  pPage=1;pKw='';
+  switchTab('products');
+}
+async function openLowStockProduct(id){
+  CUR_PAGE='products';
+  $$('.nav-item').forEach(e=>e.classList.remove('active'));
+  const nav=[...$$('.nav-item')].find(n=>n.getAttribute('onclick')?.includes("'products'"));
+  if(nav)nav.classList.add('active');
+  $('#pageTitle').textContent='🏷️ 商品管理';
+  pPage=1;pKw='';
+  await renderProducts();
+  openProductModal(id);
 }
 async function runAIAnalyze(){
   const el=$('#aiResult');
@@ -432,7 +476,7 @@ async function renderProducts(kw){
       ${pKw?`<button class="btn btn-secondary" onclick="renderProducts('')">清空</button>`:''}
     </div>
     <table class="table">
-      <thead><tr><th>商品</th><th>分类</th><th>价格</th><th>库存</th><th>销量</th><th>状态</th><th>操作</th></tr></thead>
+      <thead><tr><th>商品</th><th>分类</th><th>价格</th><th>库存</th><th>销量</th><th>评分</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>
         ${state.products.map(p=>`<tr>
           <td><div style="display:flex;align-items:center;gap:10px"><img src="${(p.images||[''])[0]||PLACEHOLDER_IMAGE}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:48px;height:48px;border-radius:8px;object-fit:cover"><div><div style="font-weight:500">${p.name}</div><div style="color:var(--text2);font-size:12px">${p.subtitle||'-'}</div></div></div></td>
@@ -440,6 +484,7 @@ async function renderProducts(kw){
           <td><span style="color:var(--red);font-weight:600">¥${p.price}</span>${p.original_price>p.price?`<span style="text-decoration:line-through;color:var(--text2);font-size:12px;margin-left:4px">¥${p.original_price}</span>`:''}</td>
           <td><span style="color:${p.stock<10?'var(--red)':'inherit'}">${p.stock}</span></td>
           <td>${p.sales_count||0}</td>
+          <td><span style="color:#f59e0b;font-weight:600">⭐ ${Number(p.rating||5).toFixed(1)}</span></td>
           <td>${p.is_on_sale?badge('green','在售'):badge('gray','下架')}</td>
           <td>
             <button class="btn btn-secondary btn-sm" onclick="openProductModal('${p.id}')">编辑</button>
@@ -447,7 +492,7 @@ async function renderProducts(kw){
             <button class="btn btn-danger btn-sm" onclick="delProduct('${p.id}')">删除</button>
           </td>
         </tr>`).join('')}
-        ${!state.products.length?emptyRow(7,'🏷️',pKw?'没有匹配的商品':'暂无商品',pKw?'换个关键词试试。':'点击右上角新增商品。'):''}
+        ${!state.products.length?emptyRow(8,'🏷️',pKw?'没有匹配的商品':'暂无商品',pKw?'换个关键词试试。':'点击右上角新增商品。'):''}
       </tbody>
     </table>
     <div class="pagination">
@@ -459,7 +504,7 @@ async function renderProducts(kw){
   $('#mainContent').innerHTML=html;
 }
 async function openProductModal(id){
-  const p=id?state.products.find(x=>x.id===id):null;
+  const p=id?(state.products.find(x=>x.id===id) || await api(`/admin/products/${id}`).catch(()=>null)):null;
   const cats=await api('/admin/categories/').catch(()=>({items:[]}));
   const catItems=cats.items||cats.data?.items||[];
   const catOpts=catItems.map(c=>`<option value="${c.id}" ${p&&p.category_id===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
@@ -478,7 +523,11 @@ async function openProductModal(id){
         </div>
         <div class="form-row">
           <div class="form-group"><label>库存</label><input id="fp-stock" type="number" min="0" value="${p?.stock??0}"></div>
+          <div class="form-group"><label>评分（1-5）</label><input id="fp-rating" type="number" min="1" max="5" step="0.1" value="${p?.rating??5.0}"></div>
+        </div>
+        <div class="form-row">
           <div class="form-group"><label>销售状态</label><select id="fp-sale"><option value="true" ${p?.is_on_sale!==false?'selected':''}>上架销售</option><option value="false" ${p?.is_on_sale===false?'selected':''}>暂时下架</option></select></div>
+          <div class="form-group"><label>前端展示</label><input value="小程序展示为 ⭐${Number(p?.rating??5.0).toFixed(1)}" disabled></div>
         </div>
         <div class="form-group"><label>商品描述</label><textarea id="fp-desc" placeholder="介绍材质、工艺、规格、收藏价值">${esc(p?.description||'')}</textarea></div>
       </div>
@@ -581,10 +630,13 @@ function setFpImages(imgs){
 
 async function saveProduct(id){
   if(!$('#fp-name').value.trim()){alert('请填写商品名称');return;}
+  const rating=parseFloat($('#fp-rating').value)||5;
+  if(rating<1||rating>5){alert('评分请输入 1 到 5 之间的数字');return;}
   const payload={name:$('#fp-name').value.trim(),category_id:$('#fp-cat').value||null,
     price:parseFloat($('#fp-price').value)||0,original_price:parseFloat($('#fp-op').value)||0,
     subtitle:$('#fp-sub').value,description:$('#fp-desc').value,
     stock:parseInt($('#fp-stock').value)||0,
+    rating,
     images:$('#fp-img-list').value.split(',').filter(Boolean),
     is_on_sale:$('#fp-sale').value==='true'};
   const method=id?'PUT':'POST';
