@@ -214,7 +214,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
   <div class="sidebar">
     <div class="sidebar-logo">
       <h2>🏪 小吉微商城</h2>
-      <span>管理后台 · v20260608-2118</span>
+      <span>管理后台 · v20260608-2128</span>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-item active" onclick="switchTab('dashboard',this)"><span class="icon">📊</span>首页看板</div>
@@ -247,7 +247,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 
 <script>
 const API = 'https://api.zhouyuaninfo.com.cn/api/v1'
-const BUILD_VERSION = 'v20260608-2118'
+const BUILD_VERSION = 'v20260608-2128'
 let TOKEN = localStorage.getItem('adminToken') || ''
 let CUR_PAGE = 'dashboard'
 let state = { products: [], orders: [], users: [], coupons: [], banners: [] }
@@ -647,13 +647,13 @@ async function optimizeProductImage(idx){
   if(!name){alert('请先填写商品名称');return;}
   const catEl=$('#fp-cat');
   const category=catEl.options[catEl.selectedIndex]?.text||'';
-  setNote('#fp-img-note','info','AI 正在优化图片，请稍候...');
+  setNote('#fp-img-note','info','AI 正在基于原图优化背景、光线和构图，请稍候...');
   try{
     const r=await api('/admin/ai/optimize_image',{method:'POST',body:JSON.stringify({product_name:name,category,image_url:source})});
     if(r.error)throw new Error(r.error);
     const url=r.image_url;if(!url)throw new Error('优化失败，请重试');
     imgs.push(url);setFpImages(imgs);
-    setNote('#fp-img-note','ok','AI 优化图片已生成并加入图片列表。');
+    setNote('#fp-img-note','ok','AI 已基于原图优化，并加入图片列表。');
   }catch(e){setNote('#fp-img-note','err','AI 优化失败：'+e.message);}
 }
 async function uploadProductImage(file){
