@@ -125,11 +125,19 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 .switch-row input{width:auto}
 .image-workspace{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px;align-items:start}
 .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:10px;min-height:112px;background:#f8fafc;border:1px dashed var(--border);border-radius:10px;padding:10px}
-.image-tile{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#fff;border:1px solid var(--border)}
+.image-tile{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#fff;border:1px solid var(--border);cursor:zoom-in}
 .image-tile img{width:100%;height:100%;object-fit:cover;display:block}
 .image-tile button{position:absolute;top:6px;right:6px;width:24px;height:24px;border:none;border-radius:50%;background:rgba(15,23,42,.78);color:#fff;cursor:pointer;line-height:24px;text-align:center}
 .image-tile button.ai-btn{left:6px;right:auto;width:34px;border-radius:12px;background:rgba(45,90,39,.9);font-size:11px;font-weight:700}
 .image-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--text2);font-size:13px;min-height:88px}
+.image-viewer{position:fixed;inset:0;background:rgba(15,23,42,.84);z-index:160;display:flex;flex-direction:column;backdrop-filter:blur(4px)}
+.image-viewer-head{height:56px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff}
+.image-viewer-title{font-size:13px;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.image-viewer-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.image-viewer-actions button,.image-viewer-actions a{height:34px;min-width:34px;padding:0 12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.12);color:#fff;border-radius:8px;text-decoration:none;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;justify-content:center}
+.image-viewer-actions button:hover,.image-viewer-actions a:hover{background:rgba(255,255,255,.2)}
+.image-viewer-stage{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:18px}
+.image-viewer-stage img{max-width:none;max-height:none;transition:transform .12s ease;transform-origin:center center;box-shadow:0 24px 70px rgba(0,0,0,.36);border-radius:8px;background:#fff}
 .category-icon-thumb{width:44px;height:44px;border-radius:12px;background:#f6faf4;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
 .category-icon-thumb img{width:34px;height:34px;object-fit:contain}
 .category-icon-thumb .fallback{font-size:22px;color:var(--green);font-weight:700}
@@ -214,7 +222,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
   <div class="sidebar">
     <div class="sidebar-logo">
       <h2>🏪 小吉微商城</h2>
-      <span>管理后台 · v20260608-2128</span>
+      <span>管理后台 · v20260608-2138</span>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-item active" onclick="switchTab('dashboard',this)"><span class="icon">📊</span>首页看板</div>
@@ -244,13 +252,15 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 
 <!-- 通用Modal容器 -->
 <div id="modalRoot"></div>
+<div id="imageViewerRoot"></div>
 
 <script>
 const API = 'https://api.zhouyuaninfo.com.cn/api/v1'
-const BUILD_VERSION = 'v20260608-2128'
+const BUILD_VERSION = 'v20260608-2138'
 let TOKEN = localStorage.getItem('adminToken') || ''
 let CUR_PAGE = 'dashboard'
 let state = { products: [], orders: [], users: [], coupons: [], banners: [] }
+let imageViewerZoom = 1
 const DEFAULT_CATEGORY_ICONS=[
   {name:'海南黄花梨',url:'/assets/icons/huanghuali.svg'},
   {name:'海南沉香',url:'/assets/icons/chenxiang.svg'},
@@ -318,6 +328,42 @@ function showModal(html, size=''){
   $('#modalRoot').innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal ${size}">${html}</div></div>`
 }
 function closeModal(){$('#modalRoot').innerHTML=''}
+function publicImageUrl(url){
+  url=String(url||'').trim();
+  if(!url)return PLACEHOLDER_IMAGE;
+  if(url.startsWith('http://')||url.startsWith('https://'))return url;
+  if(url.startsWith('/'))return location.origin+url;
+  return url;
+}
+function openImageViewer(url){
+  const full=publicImageUrl(url);
+  imageViewerZoom=1;
+  $('#imageViewerRoot').innerHTML=`<div class="image-viewer" onclick="if(event.target===this)closeImageViewer()">
+    <div class="image-viewer-head">
+      <div class="image-viewer-title">${esc(full)}</div>
+      <div class="image-viewer-actions">
+        <button onclick="zoomImageViewer(-0.2)" title="缩小">−</button>
+        <button onclick="resetImageViewerZoom()" title="重置">100%</button>
+        <button onclick="zoomImageViewer(0.2)" title="放大">＋</button>
+        <a href="${esc(full)}" target="_blank" rel="noopener" title="新窗口查看">打开原图</a>
+        <button onclick="closeImageViewer()" title="关闭">×</button>
+      </div>
+    </div>
+    <div class="image-viewer-stage" onclick="if(event.target===this)closeImageViewer()">
+      <img id="imageViewerImg" src="${esc(full)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE">
+    </div>
+  </div>`;
+  applyImageViewerZoom();
+}
+function applyImageViewerZoom(){
+  const img=$('#imageViewerImg');if(img)img.style.transform=`scale(${imageViewerZoom})`;
+}
+function zoomImageViewer(delta){
+  imageViewerZoom=Math.max(.3,Math.min(4,+(imageViewerZoom+delta).toFixed(2)));
+  applyImageViewerZoom();
+}
+function resetImageViewerZoom(){imageViewerZoom=1;applyImageViewerZoom();}
+function closeImageViewer(){$('#imageViewerRoot').innerHTML=''}
 function fmtDate(s){
   if(!s)return'-';const d=new Date(s);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
@@ -680,10 +726,10 @@ function setFpImages(imgs){
   $('#fp-img-list').value=imgs.join(',');
   const grid=$('#fp-img-grid');if(!grid)return;
   grid.innerHTML=imgs.length===0?'<div class="image-empty">暂无图片，使用右侧工具添加</div>':
-    imgs.map((img,i)=>`<div class="image-tile" id="fp-img-wrap-${i}">
+    imgs.map((img,i)=>`<div class="image-tile" id="fp-img-wrap-${i}" data-img="${esc(img)}" onclick="openImageViewer(this.dataset.img)" title="点击查看大图">
       <img src="${esc(img)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE">
-      <button class="ai-btn" onclick="optimizeProductImage(${i})" title="AI优化">AI</button>
-      <button onclick="removeFpImg(${i})" title="删除">×</button>
+      <button class="ai-btn" onclick="event.stopPropagation();optimizeProductImage(${i})" title="AI优化">AI</button>
+      <button onclick="event.stopPropagation();removeFpImg(${i})" title="删除">×</button>
     </div>`).join('');
 }
 
