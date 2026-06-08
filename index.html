@@ -639,7 +639,7 @@ async function optimizeProductImage(idx){
   const category=catEl.options[catEl.selectedIndex]?.text||'';
   setNote('#fp-img-note','info','AI 正在优化图片，请稍候...');
   try{
-    const r=await api(`/admin/ai/optimize_image?product_name=${encodeURIComponent(name)}&category=${encodeURIComponent(category)}&image_url=${encodeURIComponent(source)}`);
+    const r=await api('/admin/ai/optimize_image',{method:'POST',body:JSON.stringify({product_name:name,category,image_url:source})});
     if(r.error)throw new Error(r.error);
     const url=r.image_url;if(!url)throw new Error('优化失败，请重试');
     imgs.push(url);setFpImages(imgs);
