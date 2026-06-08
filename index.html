@@ -121,6 +121,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 .image-tile{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#fff;border:1px solid var(--border)}
 .image-tile img{width:100%;height:100%;object-fit:cover;display:block}
 .image-tile button{position:absolute;top:6px;right:6px;width:24px;height:24px;border:none;border-radius:50%;background:rgba(15,23,42,.78);color:#fff;cursor:pointer;line-height:24px;text-align:center}
+.image-tile button.ai-btn{left:6px;right:auto;width:34px;border-radius:12px;background:rgba(45,90,39,.9);font-size:11px;font-weight:700}
 .image-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--text2);font-size:13px;min-height:88px}
 .category-icon-thumb{width:44px;height:44px;border-radius:12px;background:#f6faf4;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
 .category-icon-thumb img{width:34px;height:34px;object-fit:contain}
@@ -566,6 +567,7 @@ async function openProductModal(id){
       <div class="ai-box">
         <h4>AI 商品文案</h4>
         <button class="btn btn-secondary btn-sm" onclick="genProductDesc()">生成商品描述</button>
+        <button class="btn btn-secondary btn-sm" onclick="polishProductDesc()">AI 润色描述</button>
         <div id="aiDescResult" class="ai-result" style="margin-top:10px;min-height:54px">可根据商品名和分类生成描述，确认后会自动填入“商品描述”。</div>
       </div>
     </div>
@@ -589,6 +591,24 @@ async function genProductDesc(){
   }catch(e){el.className='ai-result';el.textContent='AI request failed: '+e.message;}
 }
 
+async function polishProductDesc(){
+  const name=$('#fp-name').value.trim();
+  const desc=$('#fp-desc').value.trim();
+  const cat=$('#fp-cat');
+  if(!name){alert('请先填写商品名称');return;}
+  if(!desc){alert('请先填写或生成一段商品描述');return;}
+  const el=$('#aiDescResult');el.className='ai-result loading';el.textContent='AI 正在润色描述...';
+  try{
+    const text=await streamText(
+      `/admin/ai/polish_desc/stream?product_name=${encodeURIComponent(name)}&category=${encodeURIComponent(cat.options[cat.selectedIndex]?.text||'')}&description=${encodeURIComponent(desc)}`,
+      {},
+      t=>{el.className='ai-result loading';el.textContent=t||'AI 正在润色描述...';}
+    );
+    el.className='ai-result';el.textContent=text||'润色完成';
+    if(text)$('#fp-desc').value=text;
+  }catch(e){el.className='ai-result';el.textContent='AI 润色失败：'+e.message;}
+}
+
 async function genProductImage(){
   const name=$('#fp-name').value.trim();if(!name){alert('请先填写商品名称');return;}
   const catEl=$('#fp-cat');
@@ -601,6 +621,24 @@ async function genProductImage(){
     const imgs=getFpImages();imgs.push(url);setFpImages(imgs);
     setNote('#fp-img-note','ok','AI 图片已生成并加入图片列表。');
   }catch(e){setNote('#fp-img-note','err','生成失败：'+e.message);}
+}
+
+async function optimizeProductImage(idx){
+  const imgs=getFpImages();
+  const source=imgs[idx];
+  const name=$('#fp-name').value.trim();
+  if(!source){return;}
+  if(!name){alert('请先填写商品名称');return;}
+  const catEl=$('#fp-cat');
+  const category=catEl.options[catEl.selectedIndex]?.text||'';
+  setNote('#fp-img-note','info','AI 正在优化图片，请稍候...');
+  try{
+    const r=await api(`/admin/ai/optimize_image?product_name=${encodeURIComponent(name)}&category=${encodeURIComponent(category)}&image_url=${encodeURIComponent(source)}`);
+    if(r.error)throw new Error(r.error);
+    const url=r.image_url;if(!url)throw new Error('优化失败，请重试');
+    imgs.push(url);setFpImages(imgs);
+    setNote('#fp-img-note','ok','AI 优化图片已生成并加入图片列表。');
+  }catch(e){setNote('#fp-img-note','err','AI 优化失败：'+e.message);}
 }
 async function uploadProductImage(file){
   if(!file)return;
@@ -628,6 +666,7 @@ function setFpImages(imgs){
   grid.innerHTML=imgs.length===0?'<div class="image-empty">暂无图片，使用右侧工具添加</div>':
     imgs.map((img,i)=>`<div class="image-tile" id="fp-img-wrap-${i}">
       <img src="${esc(img)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE">
+      <button class="ai-btn" onclick="optimizeProductImage(${i})" title="AI优化">AI</button>
       <button onclick="removeFpImg(${i})" title="删除">×</button>
     </div>`).join('');
 }
