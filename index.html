@@ -98,6 +98,10 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;transition:border .2s;background:var(--white)}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green);outline:none}
 .form-group textarea{resize:vertical;min-height:80px}
+.field-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.field-head label{margin-bottom:0}
+.mini-ai-btn{border:1px solid #bbf7d0;background:#f0fdf4;color:var(--green);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;line-height:1.4;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s;white-space:nowrap}
+.mini-ai-btn:hover{background:#dcfce7;border-color:#86efac;transform:translateY(-1px)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.42);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(3px);padding:20px}
 .modal{background:var(--white);border-radius:10px;padding:0;width:620px;max-width:96vw;max-height:88vh;overflow:hidden;box-shadow:0 24px 70px rgba(15,23,42,.22);display:flex;flex-direction:column}
@@ -534,7 +538,10 @@ async function openProductModal(id){
           <div class="form-group"><label>销售状态</label><select id="fp-sale"><option value="true" ${p?.is_on_sale!==false?'selected':''}>上架销售</option><option value="false" ${p?.is_on_sale===false?'selected':''}>暂时下架</option></select></div>
           <div class="form-group"><label>前端展示</label><input value="小程序展示为 ⭐${Number(p?.rating??5.0).toFixed(1)}" disabled></div>
         </div>
-        <div class="form-group"><label>商品描述</label><textarea id="fp-desc" placeholder="介绍材质、工艺、规格、收藏价值">${esc(p?.description||'')}</textarea></div>
+        <div class="form-group">
+          <div class="field-head"><label>商品描述</label><button type="button" class="mini-ai-btn" onclick="polishProductDesc()">✦ AI 润色</button></div>
+          <textarea id="fp-desc" placeholder="介绍材质、工艺、规格、收藏价值">${esc(p?.description||'')}</textarea>
+        </div>
       </div>
 
       <div class="form-panel soft">
@@ -567,7 +574,6 @@ async function openProductModal(id){
       <div class="ai-box">
         <h4>AI 商品文案</h4>
         <button class="btn btn-secondary btn-sm" onclick="genProductDesc()">生成商品描述</button>
-        <button class="btn btn-secondary btn-sm" onclick="polishProductDesc()">AI 润色描述</button>
         <div id="aiDescResult" class="ai-result" style="margin-top:10px;min-height:54px">可根据商品名和分类生成描述，确认后会自动填入“商品描述”。</div>
       </div>
     </div>
