@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>小吉微商城管理后台</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -211,7 +214,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
   <div class="sidebar">
     <div class="sidebar-logo">
       <h2>🏪 小吉微商城</h2>
-      <span>管理后台</span>
+      <span>管理后台 · v20260608-2118</span>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-item active" onclick="switchTab('dashboard',this)"><span class="icon">📊</span>首页看板</div>
@@ -244,6 +247,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
 
 <script>
 const API = 'https://api.zhouyuaninfo.com.cn/api/v1'
+const BUILD_VERSION = 'v20260608-2118'
 let TOKEN = localStorage.getItem('adminToken') || ''
 let CUR_PAGE = 'dashboard'
 let state = { products: [], orders: [], users: [], coupons: [], banners: [] }
@@ -266,10 +270,16 @@ function money(v){return '¥'+Number(v||0).toFixed(2)}
 async function api(path, opts={}){
   const headers={...(opts.headers||{}),'Authorization':`Bearer ${TOKEN}`};
   if(!(opts.body instanceof FormData))headers['Content-Type']='application/json';
-  const r = await fetch(API+path,{...opts,headers});
+  let r;
+  try{
+    r = await fetch(API+path,{...opts,headers});
+  }catch(e){
+    throw new Error(`网络请求失败：${e.message||'请检查网络或刷新页面后重试'}（${BUILD_VERSION}）`);
+  }
+  const raw = await r.text();
   let data={};
-  try{data=await r.json()}catch(e){data={message:r.statusText||'请求失败'}}
-  if(!r.ok)throw new Error(data.detail||data.message||`请求失败（${r.status}）`);
+  try{data=raw?JSON.parse(raw):{}}catch(e){data={message:raw||r.statusText||'请求失败'}}
+  if(!r.ok)throw new Error(data.detail||data.message||`请求失败（HTTP ${r.status}）`);
   return data;
 }
 async function streamText(path, opts={}, onUpdate=()=>{}){
