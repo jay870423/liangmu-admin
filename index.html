@@ -349,8 +349,8 @@ function openImageViewer(url){
         <button onclick="closeImageViewer()" title="关闭">×</button>
       </div>
     </div>
-    <div class="image-viewer-stage" onclick="if(event.target===this)closeImageViewer()">
-      <img id="imageViewerImg" src="${esc(full)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE">
+    <div class="image-viewer-stage" onclick="if(event.target===this)closeImageViewer()" onwheel="onImageViewerWheel(event)" ondblclick="resetImageViewerZoom()">
+      <img id="imageViewerImg" src="${esc(full)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" title="滚轮缩放，双击重置">
     </div>
   </div>`;
   applyImageViewerZoom();
@@ -361,6 +361,10 @@ function applyImageViewerZoom(){
 function zoomImageViewer(delta){
   imageViewerZoom=Math.max(.3,Math.min(4,+(imageViewerZoom+delta).toFixed(2)));
   applyImageViewerZoom();
+}
+function onImageViewerWheel(event){
+  event.preventDefault();
+  zoomImageViewer(event.deltaY>0?-0.12:0.12);
 }
 function resetImageViewerZoom(){imageViewerZoom=1;applyImageViewerZoom();}
 function closeImageViewer(){$('#imageViewerRoot').innerHTML=''}
@@ -915,6 +919,7 @@ async function renderBanners(kw){
           <td>${b.sort_order}</td>
           <td>${b.is_active?badge('green','启用'):badge('gray','禁用')}</td>
           <td><div class="table-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openImageViewer('${esc(b.image_url||PLACEHOLDER_IMAGE)}')">查看</button>
             <button class="btn btn-secondary btn-sm" onclick="openBannerModal('${b.id}')">编辑</button>
             <button class="btn btn-danger btn-sm" onclick="delBanner('${b.id}')">删除</button>
           </div></td>
@@ -962,6 +967,7 @@ async function openBannerModal(id){
           </div>
           <div class="tool-stack">
             <label class="btn btn-secondary" style="justify-content:center;cursor:pointer">上传轮播图<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadBannerImage(this.files[0])"></label>
+            <button class="btn btn-secondary" onclick="openImageViewer($('#fb-img').value||PLACEHOLDER_IMAGE)">在线查看</button>
             <button class="btn btn-primary" onclick="genBannerImage()">AI Optimize Banner</button>
             <button class="btn btn-secondary" onclick="genBannerCopy()">AI 生成文案</button>
           </div>
