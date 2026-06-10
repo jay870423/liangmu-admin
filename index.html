@@ -961,6 +961,11 @@ async function openBannerModal(id){
       <div class="form-panel soft">
         <div class="section-title">图片素材</div>
         <div class="form-group"><label>图片 URL</label><input id="fb-img" value="${esc(b?.image_url||'')}" placeholder="/assets/banners/xxx.jpg" oninput="previewBannerImage()"></div>
+        <div class="form-group">
+          <label>AI 图片描述</label>
+          <textarea id="fb-ai-desc" placeholder="例如：海南黄花梨木雕摆件，暖色背景，高级工艺品摄影，主体完整居中"></textarea>
+          <div class="form-help">填写后 AI 会优先按描述生成；未填写时按标题精确生成符合内容的轮播图。</div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 240px;gap:16px;align-items:start">
           <div onclick="openImageViewer($('#fb-img').value||PLACEHOLDER_IMAGE)" style="border:1px solid var(--border);border-radius:10px;background:#fff;min-height:210px;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:zoom-in;padding:10px">
             <img id="fb-preview" src="${esc(b?.image_url||PLACEHOLDER_IMAGE)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:100%;height:220px;object-fit:contain;background:#f8fafc;border-radius:8px">
@@ -1038,22 +1043,28 @@ async function uploadBannerImage(file){
   }catch(e){setNote('#fb-note','err','上传失败：'+e.message);}
 }
 async function genBannerImage(){
-  const title=$('#fb-title').value.trim();if(!title){alert('请先填写轮播图标题');return;}
+  const title=$('#fb-title').value.trim();
+  const aiDesc=($('#fb-ai-desc')?.value||'').trim();
+  const generateText=aiDesc||title;
+  if(!generateText){alert('请先填写轮播图标题或 AI 图片描述');return;}
   const currentImage=($('#fb-img').value||'').trim();
-  setNote('#fb-note','info',currentImage?'AI 正在基于当前图片生成轮播图...':'AI 正在生成轮播图...');
+  setNote('#fb-note','info',currentImage?(aiDesc?'AI 正在按描述优化当前轮播图...':'AI 正在基于标题优化当前轮播图...'):(aiDesc?'AI 正在按描述生成轮播图...':'AI 正在按标题生成轮播图...'));
   try{
     let r;
     if(currentImage){
+      const prompt=aiDesc
+        ? `根据以下描述生成适合小程序首页展示的轮播图：${aiDesc}。完整保留原图主体，可优化背景、光线和构图，不要裁切主体，画面需符合描述内容。`
+        : `根据标题“${title}”生成适合小程序首页展示的轮播图，画面需精准符合标题内容，完整保留原图主体，可优化背景、光线和构图，不要裁切主体。`;
       r=await api('/admin/ai/optimize_image',{method:'POST',body:JSON.stringify({
-        product_name:title,
+        product_name:title||generateText,
         category:'首页轮播图',
-        title,
+        title:title||generateText,
         scene:'banner',
         image_url:currentImage,
-        prompt:'生成适合小程序首页展示的轮播图，完整保留原图主体，可优化背景、光线和构图，不要裁切主体。'
+        prompt
       })});
     }else{
-      r=await api(`/home/banners/ai/generate_image?banner_title=${encodeURIComponent(title)}&banner_desc=${encodeURIComponent($('#fb-val').value||'')}`);
+      r=await api(`/home/banners/ai/generate_image?banner_title=${encodeURIComponent(title||generateText)}&banner_desc=${encodeURIComponent(aiDesc||title)}`);
     }
     if(r.error)throw new Error(r.error);
     if(!r.image_url)throw new Error('AI 未返回图片地址');
