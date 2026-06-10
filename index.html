@@ -968,7 +968,7 @@ async function openBannerModal(id){
           <div class="tool-stack">
             <label class="btn btn-secondary" style="justify-content:center;cursor:pointer">上传轮播图<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadBannerImage(this.files[0])"></label>
             <button class="btn btn-secondary" onclick="openImageViewer($('#fb-img').value||PLACEHOLDER_IMAGE)">在线查看</button>
-            <button class="btn btn-primary" onclick="genBannerImage()">AI Optimize Banner</button>
+            <button class="btn btn-primary" onclick="genBannerImage()">AI 生图</button>
             <button class="btn btn-secondary" onclick="genBannerCopy()">AI 生成文案</button>
           </div>
         </div>
@@ -1038,28 +1038,28 @@ async function uploadBannerImage(file){
   }catch(e){setNote('#fb-note','err','上传失败：'+e.message);}
 }
 async function genBannerImage(){
-  const title=$('#fb-title').value.trim();if(!title){alert('Please enter a banner title first');return;}
+  const title=$('#fb-title').value.trim();if(!title){alert('请先填写轮播图标题');return;}
   const currentImage=($('#fb-img').value||'').trim();
-  setNote('#fb-note','info',currentImage?'AI is optimizing the banner from the current image...':'AI is generating a banner image...');
+  setNote('#fb-note','info',currentImage?'AI 正在基于当前图片生成轮播图...':'AI 正在生成轮播图...');
   try{
     let r;
     if(currentImage){
       r=await api('/admin/ai/optimize_image',{method:'POST',body:JSON.stringify({
         product_name:title,
-        category:'homepage banner',
+        category:'首页轮播图',
         title,
         scene:'banner',
         image_url:currentImage,
-        prompt:'Create a homepage banner. Keep the source subject fully visible. Improve background, lighting and composition without cropping the subject.'
+        prompt:'生成适合小程序首页展示的轮播图，完整保留原图主体，可优化背景、光线和构图，不要裁切主体。'
       })});
     }else{
       r=await api(`/home/banners/ai/generate_image?banner_title=${encodeURIComponent(title)}&banner_desc=${encodeURIComponent($('#fb-val').value||'')}`);
     }
     if(r.error)throw new Error(r.error);
-    if(!r.image_url)throw new Error('No image URL returned');
+    if(!r.image_url)throw new Error('AI 未返回图片地址');
     $('#fb-img').value=r.image_url;previewBannerImage();
-    setNote('#fb-note','ok',currentImage?'AI optimized the banner and filled the image URL.':'AI generated the banner and filled the image URL.');
-  }catch(e){setNote('#fb-note','err','AI image failed: '+e.message);}
+    setNote('#fb-note','ok','AI 生图完成，已回填图片 URL。');
+  }catch(e){setNote('#fb-note','err','AI 生图失败：'+e.message);}
 }
 async function genBannerCopy(){
   const el=$('#aiBannerResult');el.className='ai-result loading';el.textContent='AI streaming...';
