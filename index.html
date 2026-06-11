@@ -231,6 +231,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg)
       <div class="nav-item" onclick="switchTab('banners',this)"><span class="icon">🎯</span>轮播图管理</div>
       <div class="nav-item" onclick="switchTab('orders',this)"><span class="icon">📦</span>订单管理</div>
       <div class="nav-item" onclick="switchTab('coupons',this)"><span class="icon">🎫</span>优惠券管理</div>
+      <div class="nav-item" onclick="switchTab('notifications',this)"><span class="icon">🔔</span>通知管理</div>
       <div class="nav-item" onclick="switchTab('users',this)"><span class="icon">👥</span>用户管理</div>
       <div class="nav-item" onclick="switchTab('ai',this)"><span class="icon">🤖</span>智能助手</div>
     </nav>
@@ -259,7 +260,7 @@ const API = 'https://api.zhouyuaninfo.com.cn/api/v1'
 const BUILD_VERSION = 'v20260608-2138'
 let TOKEN = localStorage.getItem('adminToken') || ''
 let CUR_PAGE = 'dashboard'
-let state = { products: [], orders: [], users: [], coupons: [], banners: [] }
+let state = { products: [], orders: [], users: [], coupons: [], banners: [], notifications: [] }
 let imageViewerZoom = 1
 const DEFAULT_CATEGORY_ICONS=[
   {name:'海南黄花梨',url:'/assets/icons/huanghuali.svg'},
@@ -349,8 +350,8 @@ function openImageViewer(url){
         <button onclick="closeImageViewer()" title="关闭">×</button>
       </div>
     </div>
-    <div class="image-viewer-stage" onclick="if(event.target===this)closeImageViewer()">
-      <img id="imageViewerImg" src="${esc(full)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE">
+    <div class="image-viewer-stage" onclick="if(event.target===this)closeImageViewer()" onwheel="onImageViewerWheel(event)" ondblclick="resetImageViewerZoom()">
+      <img id="imageViewerImg" src="${esc(full)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" title="滚轮缩放，双击重置">
     </div>
   </div>`;
   applyImageViewerZoom();
@@ -361,6 +362,10 @@ function applyImageViewerZoom(){
 function zoomImageViewer(delta){
   imageViewerZoom=Math.max(.3,Math.min(4,+(imageViewerZoom+delta).toFixed(2)));
   applyImageViewerZoom();
+}
+function onImageViewerWheel(event){
+  event.preventDefault();
+  zoomImageViewer(event.deltaY>0?-0.12:0.12);
 }
 function resetImageViewerZoom(){imageViewerZoom=1;applyImageViewerZoom();}
 function closeImageViewer(){$('#imageViewerRoot').innerHTML=''}
@@ -428,7 +433,7 @@ function switchTab(tab,el){
   $$('.nav-item').forEach(e=>e.classList.remove('active'));
   if(!el)el=[...$$('.nav-item')].find(n=>n.getAttribute('onclick')?.includes(`'${tab}'`));
   if(el)el.classList.add('active');
-  const titles={dashboard:'📊 首页看板',products:'🏷️ 商品管理',categories:'📂 分类管理',banners:'🎯 轮播图管理',orders:'📦 订单管理',coupons:'🎫 优惠券管理',users:'👥 用户管理',ai:'🤖 智能助手'};
+  const titles={dashboard:'📊 首页看板',products:'🏷️ 商品管理',categories:'📂 分类管理',banners:'🎯 轮播图管理',orders:'📦 订单管理',coupons:'🎫 优惠券管理',notifications:'🔔 通知管理',users:'👥 用户管理',ai:'🤖 智能助手'};
   $('#pageTitle').textContent=titles[tab]||tab;
   if(tab==='dashboard')renderDashboard();
   else if(tab==='products')renderProducts();
@@ -436,6 +441,7 @@ function switchTab(tab,el){
   else if(tab==='banners')renderBanners();
   else if(tab==='orders')renderOrders();
   else if(tab==='coupons')renderCoupons();
+  else if(tab==='notifications')renderNotifications();
   else if(tab==='users')renderUsers();
   else if(tab==='ai')renderAI();
 }
@@ -909,12 +915,13 @@ async function renderBanners(kw){
       <thead><tr><th>图片</th><th>标题</th><th>链接类型</th><th>排序</th><th>状态</th><th>操作</th></tr></thead>
       <tbody>
         ${rows.map(b=>`<tr>
-          <td><img src="${esc(b.image_url||PLACEHOLDER_IMAGE)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:120px;height:60px;object-fit:cover;border-radius:6px"></td>
+          <td><img src="${esc(b.image_url||PLACEHOLDER_IMAGE)}" onclick="openImageViewer(this.getAttribute('src'))" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:120px;height:60px;object-fit:contain;background:#f8fafc;border-radius:6px;cursor:zoom-in"></td>
           <td>${esc(b.title)}</td>
           <td>${b.link_type}</td>
           <td>${b.sort_order}</td>
           <td>${b.is_active?badge('green','启用'):badge('gray','禁用')}</td>
           <td><div class="table-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openImageViewer('${esc(b.image_url||PLACEHOLDER_IMAGE)}')">查看</button>
             <button class="btn btn-secondary btn-sm" onclick="openBannerModal('${b.id}')">编辑</button>
             <button class="btn btn-danger btn-sm" onclick="delBanner('${b.id}')">删除</button>
           </div></td>
@@ -956,13 +963,19 @@ async function openBannerModal(id){
       <div class="form-panel soft">
         <div class="section-title">图片素材</div>
         <div class="form-group"><label>图片 URL</label><input id="fb-img" value="${esc(b?.image_url||'')}" placeholder="/assets/banners/xxx.jpg" oninput="previewBannerImage()"></div>
+        <div class="form-group">
+          <label>AI 图片描述</label>
+          <textarea id="fb-ai-desc" placeholder="例如：海南黄花梨木雕摆件，暖色背景，高级工艺品摄影，主体完整居中"></textarea>
+          <div class="form-help">填写后 AI 会优先按描述生成；未填写时按标题精确生成符合内容的轮播图。</div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 240px;gap:16px;align-items:start">
-          <div style="border:1px solid var(--border);border-radius:10px;background:#fff;min-height:150px;display:flex;align-items:center;justify-content:center;overflow:hidden">
-            <img id="fb-preview" src="${esc(b?.image_url||PLACEHOLDER_IMAGE)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:100%;height:180px;object-fit:cover">
+          <div onclick="openImageViewer($('#fb-img').value||PLACEHOLDER_IMAGE)" style="border:1px solid var(--border);border-radius:10px;background:#fff;min-height:210px;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:zoom-in;padding:10px">
+            <img id="fb-preview" src="${esc(b?.image_url||PLACEHOLDER_IMAGE)}" onerror="this.onerror=null;this.src=PLACEHOLDER_IMAGE" style="width:100%;height:220px;object-fit:contain;background:#f8fafc;border-radius:8px">
           </div>
           <div class="tool-stack">
             <label class="btn btn-secondary" style="justify-content:center;cursor:pointer">上传轮播图<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadBannerImage(this.files[0])"></label>
-            <button class="btn btn-primary" onclick="genBannerImage()">AI 生成横幅</button>
+            <button class="btn btn-secondary" onclick="openImageViewer($('#fb-img').value||PLACEHOLDER_IMAGE)">在线查看</button>
+            <button class="btn btn-primary" onclick="genBannerImage()">AI 生图</button>
             <button class="btn btn-secondary" onclick="genBannerCopy()">AI 生成文案</button>
           </div>
         </div>
@@ -1032,15 +1045,34 @@ async function uploadBannerImage(file){
   }catch(e){setNote('#fb-note','err','上传失败：'+e.message);}
 }
 async function genBannerImage(){
-  const title=$('#fb-title').value.trim();if(!title){alert('请先填写标题');return;}
-  setNote('#fb-note','info','AI 正在生成横幅图片，请稍候...');
+  const title=$('#fb-title').value.trim();
+  const aiDesc=($('#fb-ai-desc')?.value||'').trim();
+  const generateText=aiDesc||title;
+  if(!generateText){alert('请先填写轮播图标题或 AI 图片描述');return;}
+  const currentImage=($('#fb-img').value||'').trim();
+  setNote('#fb-note','info',currentImage?(aiDesc?'AI 正在按描述优化当前轮播图...':'AI 正在基于标题优化当前轮播图...'):(aiDesc?'AI 正在按描述生成轮播图...':'AI 正在按标题生成轮播图...'));
   try{
-    const r=await api(`/home/banners/ai/generate_image?banner_title=${encodeURIComponent(title)}&banner_desc=${encodeURIComponent($('#fb-val').value||'')}`);
+    let r;
+    if(currentImage){
+      const prompt=aiDesc
+        ? `根据以下描述生成适合小程序首页展示的轮播图：${aiDesc}。完整保留原图主体，可优化背景、光线和构图，不要裁切主体，画面需符合描述内容。`
+        : `根据标题“${title}”生成适合小程序首页展示的轮播图，画面需精准符合标题内容，完整保留原图主体，可优化背景、光线和构图，不要裁切主体。`;
+      r=await api('/admin/ai/optimize_image',{method:'POST',body:JSON.stringify({
+        product_name:title||generateText,
+        category:'首页轮播图',
+        title:title||generateText,
+        scene:'banner',
+        image_url:currentImage,
+        prompt
+      })});
+    }else{
+      r=await api(`/home/banners/ai/generate_image?banner_title=${encodeURIComponent(title||generateText)}&banner_desc=${encodeURIComponent(aiDesc||title)}`);
+    }
     if(r.error)throw new Error(r.error);
-    if(!r.image_url)throw new Error('生成失败，请重试');
+    if(!r.image_url)throw new Error('AI 未返回图片地址');
     $('#fb-img').value=r.image_url;previewBannerImage();
-    setNote('#fb-note','ok','AI 横幅已生成并填入图片 URL。');
-  }catch(e){setNote('#fb-note','err','生成失败：'+e.message);}
+    setNote('#fb-note','ok','AI 生图完成，已回填图片 URL。');
+  }catch(e){setNote('#fb-note','err','AI 生图失败：'+e.message);}
 }
 async function genBannerCopy(){
   const el=$('#aiBannerResult');el.className='ai-result loading';el.textContent='AI streaming...';
@@ -1283,6 +1315,199 @@ async function pushCoupon(id){
   alert(r.message+(r.analysis?'\n\n'+r.analysis.slice(0,200):''));
 }
 async function delCoupon(id){if(!confirm('确定删除？'))return;await api(`/admin/coupons/${id}`,{method:'DELETE'});renderCoupons();}
+
+// ========== 通知管理 ==========
+let nPage=1,nKw='',nType='all';
+let notificationUserOptions=[];
+let notificationOrderOptions=[];
+let notificationProductOptions=[];
+let notificationCategoryOptions=[];
+function notificationTypeText(t){
+  return {activity:'活动通知',payment:'支付通知',order:'订单通知',system:'系统通知'}[t]||t||'系统通知';
+}
+function notificationLinkText(n){
+  const type={none:'不跳转',product:'商品',category:'分类',url:'外部链接',order:'订单'}[n.link_type]||n.link_type||'不跳转';
+  return n.link_type==='none'?type:`${type}：${esc(n.link_value||'-')}`;
+}
+function notificationUserLabel(u){
+  const name=u.nickname||`用户${String(u.id||'').slice(0,8)}`;
+  const phone=u.phone||'未绑定手机号';
+  return `${name} / ${phone}`;
+}
+function notificationOrderLabel(o){
+  const no=o.order_no||String(o.id||'').slice(0,8);
+  const receiver=o.receiver_name||o.user_nickname||'微信用户';
+  return `${no} / ${receiver} / ${money(o.pay_amount||o.total_amount||0)} / ${o.status||'-'}`;
+}
+function notificationProductLabel(p){
+  return `${p.name||'未命名商品'} / ¥${p.price??0} / 库存 ${p.stock??0}`;
+}
+function notificationCategoryLabel(c){
+  return `${c.name||'未命名分类'} / 排序 ${c.sort_order??0}`;
+}
+async function loadNotificationSelectOptions(selectedUserId='',selectedLinkType='',selectedLinkValue=''){
+  const [usersRes,ordersRes,productsRes,categoriesRes]=await Promise.all([
+    api('/admin/users?page=1&page_size=100').catch(()=>({items:[]})),
+    api('/admin/orders?page=1&page_size=100').catch(()=>({items:[]})),
+    api('/admin/products/?page=1&page_size=100').catch(()=>({items:[]})),
+    api('/admin/categories/').catch(()=>({items:[]})),
+  ]);
+  notificationUserOptions=usersRes.items||[];
+  notificationOrderOptions=ordersRes.items||[];
+  notificationProductOptions=productsRes.items||[];
+  notificationCategoryOptions=categoriesRes.items||[];
+  if(selectedUserId&&!notificationUserOptions.some(u=>String(u.id)===String(selectedUserId))){
+    notificationUserOptions.unshift({id:selectedUserId,nickname:'已选用户',phone:''});
+  }
+  if(selectedLinkType==='order'&&selectedLinkValue&&!notificationOrderOptions.some(o=>String(o.id)===String(selectedLinkValue))){
+    notificationOrderOptions.unshift({id:selectedLinkValue,order_no:'已选订单',receiver_name:'',pay_amount:0,status:''});
+  }
+  if(selectedLinkType==='product'&&selectedLinkValue&&!notificationProductOptions.some(p=>String(p.id)===String(selectedLinkValue))){
+    notificationProductOptions.unshift({id:selectedLinkValue,name:'已选商品',price:0,stock:0});
+  }
+  if(selectedLinkType==='category'&&selectedLinkValue&&!notificationCategoryOptions.some(c=>String(c.id)===String(selectedLinkValue))){
+    notificationCategoryOptions.unshift({id:selectedLinkValue,name:'已选分类',sort_order:0});
+  }
+}
+async function renderNotifications(kw){
+  if(kw!==undefined){nKw=(kw||'').trim();nPage=1;}
+  const keywordParam=nKw?`&keyword=${encodeURIComponent(nKw)}`:'';
+  const typeParam=nType&&nType!=='all'?`&type=${encodeURIComponent(nType)}`:'';
+  const d=await api(`/admin/notifications/?page=${nPage}&page_size=10${keywordParam}${typeParam}`);
+  state.notifications=d.items||[];
+  const total=d.total||0;
+  const typeTabs=[['all','全部'],['activity','活动'],['payment','支付'],['order','订单'],['system','系统']];
+  $('#mainContent').innerHTML=`<div class="card">
+    <div class="card-header"><h3>🔔 通知列表</h3><div class="card-actions"><button class="btn btn-secondary" onclick="renderNotifications()">刷新</button><button class="btn btn-primary" onclick="openNotificationModal()">+ 发布通知</button></div></div>
+    <div class="tabs">
+      ${typeTabs.map(([v,t])=>`<div class="tab ${nType===v?'active':''}" onclick="nType='${v}';nPage=1;renderNotifications()">${t}</div>`).join('')}
+    </div>
+    <div class="search-bar">
+      <input id="notificationSearch" placeholder="搜索标题 / 内容 / 跳转目标..." value="${esc(nKw)}" onkeydown="if(event.key==='Enter')renderNotifications(this.value)">
+      <button class="btn btn-secondary" onclick="renderNotifications($('#notificationSearch').value)">搜索</button>
+      ${nKw?`<button class="btn btn-secondary" onclick="renderNotifications('')">清空</button>`:''}
+    </div>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>标题</th><th>类型</th><th>对象</th><th>跳转</th><th>发布时间</th><th>状态</th><th>已读</th><th>操作</th></tr></thead>
+      <tbody>
+        ${state.notifications.map(n=>`<tr>
+          <td><div style="font-weight:600">${esc(n.title)}</div><div style="font-size:12px;color:var(--text2);max-width:340px;white-space:normal;line-height:1.5">${esc(n.content||'')}</div></td>
+          <td>${badge(n.type==='activity'?'green':n.type==='payment'?'blue':n.type==='order'?'purple':'gray',notificationTypeText(n.type))}</td>
+          <td>${n.target_type==='user'?`指定用户<br><span style="font-size:12px;color:var(--text2)">${esc(n.user_id||'-')}</span>`:'全体用户'}</td>
+          <td style="font-size:12px;color:var(--text2);max-width:220px;word-break:break-all">${notificationLinkText(n)}</td>
+          <td style="font-size:12px">${fmtDateTime(n.publish_at)}</td>
+          <td>${n.is_active?badge('green','生效'):badge('gray','停用')}</td>
+          <td>${n.read_count||0}</td>
+          <td><div class="table-actions"><button class="btn btn-secondary btn-sm" onclick="openNotificationModal('${n.id}')">编辑</button><button class="btn btn-danger btn-sm" onclick="delNotification('${n.id}')">停用</button></div></td>
+        </tr>`).join('')}
+        ${!state.notifications.length?emptyRow(8,'🔔',nKw?'没有匹配的通知':'暂无通知',nKw?'换个关键词试试。':'点击右上角发布活动、系统或运营通知，用户会在小程序消息中心看到。'):''}
+      </tbody>
+    </table></div>
+    <div class="pagination">
+      <button ${nPage<=1?'disabled':''} onclick="nPage--;renderNotifications()">上一页</button>
+      <span>第 ${nPage} / ${Math.max(1,Math.ceil(total/10))} 页</span>
+      <button ${nPage*10>=total?'disabled':''} onclick="nPage++;renderNotifications()">下一页</button>
+    </div>
+  </div>`;
+}
+async function openNotificationModal(id){
+  const n=id?state.notifications.find(x=>x.id===id):null;
+  await loadNotificationSelectOptions(n?.user_id||'',n?.link_type||'',n?.link_value||'');
+  showModal(`${modalHeader(n?'编辑通知':'发布通知','活动通知会展示在小程序首页右上角消息中心，支付通知由系统自动生成')}
+    <div class="modal-body">
+      <div class="form-panel">
+        <div class="form-group"><label>通知标题 *</label><input id="fn-title" value="${esc(n?.title||'')}" placeholder="如：端午黄花梨手串专场"></div>
+        <div class="form-group"><label>通知内容</label><textarea id="fn-content" placeholder="填写用户看到的通知内容">${esc(n?.content||'')}</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>通知类型</label><select id="fn-type">
+            <option value="activity" ${n?.type==='activity'?'selected':''}>活动通知</option>
+            <option value="system" ${n?.type==='system'?'selected':''}>系统通知</option>
+            <option value="order" ${n?.type==='order'?'selected':''}>订单通知</option>
+          </select></div>
+          <div class="form-group"><label>发布对象</label><select id="fn-target" onchange="renderNotificationTarget()">
+            <option value="all" ${n?.target_type!=='user'?'selected':''}>全体用户</option>
+            <option value="user" ${n?.target_type==='user'?'selected':''}>指定用户</option>
+          </select></div>
+        </div>
+        <div id="notificationTargetBox"></div>
+        <div class="form-row">
+          <div class="form-group"><label>跳转类型</label><select id="fn-link-type" onchange="renderNotificationLink()">
+            <option value="none" ${!n||n.link_type==='none'?'selected':''}>不跳转</option>
+            <option value="product" ${n?.link_type==='product'?'selected':''}>商品详情</option>
+            <option value="category" ${n?.link_type==='category'?'selected':''}>分类页</option>
+            <option value="url" ${n?.link_type==='url'?'selected':''}>外部链接</option>
+            <option value="order" ${n?.link_type==='order'?'selected':''}>订单页</option>
+          </select></div>
+          <div class="form-group"><label>发布时间</label><input id="fn-publish" type="datetime-local" value="${n?.publish_at?String(n.publish_at).slice(0,16):''}"></div>
+        </div>
+        <div id="notificationLinkBox"></div>
+        <div class="form-group compact"><label>状态</label><div class="switch-row"><input id="fn-active" type="checkbox" ${n?.is_active!==false?'checked':''}><span>立即生效</span></div></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveNotification('${id||''}')">保存通知</button></div>`, 'modal-md');
+  renderNotificationTarget(n?.user_id||'');
+  renderNotificationLink(n?.link_value||'');
+}
+function renderNotificationTarget(userId=''){
+  const box=$('#notificationTargetBox');if(!box)return;
+  if($('#fn-target').value!=='user'){box.innerHTML='';return;}
+  if(!userId&&$('#fn-user-id'))userId=$('#fn-user-id').value;
+  box.innerHTML=`<div class="form-group"><label>指定用户</label><select id="fn-user-id">
+    <option value="">请选择用户</option>
+    ${notificationUserOptions.map(u=>`<option value="${esc(u.id)}" ${String(userId)===String(u.id)?'selected':''}>${esc(notificationUserLabel(u))}</option>`).join('')}
+  </select><div class="form-help">${notificationUserOptions.length?'选择后该通知只会发送给这个用户。':'暂无可选用户，请先确认小程序已有用户登录记录。'}</div></div>`;
+}
+function renderNotificationLink(value=''){
+  const box=$('#notificationLinkBox');if(!box)return;
+  const type=$('#fn-link-type').value;
+  if(!value&&$('#fn-link-value'))value=$('#fn-link-value').value;
+  if(type==='none'){box.innerHTML='<div class="form-help">不配置跳转时，用户点击通知只会标记已读。</div>';return;}
+  if(type==='order'){
+    box.innerHTML=`<div class="form-group"><label>选择订单</label><select id="fn-link-value">
+      <option value="">请选择订单</option>
+      ${notificationOrderOptions.map(o=>`<option value="${esc(o.id)}" ${String(value)===String(o.id)?'selected':''}>${esc(notificationOrderLabel(o))}</option>`).join('')}
+    </select><div class="form-help">${notificationOrderOptions.length?'用户点击通知后会进入订单页查看。':'暂无可选订单。'}</div></div>`;
+    return;
+  }
+  if(type==='product'){
+    box.innerHTML=`<div class="form-group"><label>选择商品</label><select id="fn-link-value">
+      <option value="">请选择商品</option>
+      ${notificationProductOptions.map(p=>`<option value="${esc(p.id)}" ${String(value)===String(p.id)?'selected':''}>${esc(notificationProductLabel(p))}</option>`).join('')}
+    </select><div class="form-help">${notificationProductOptions.length?'用户点击通知后会进入商品详情。':'暂无可选商品，请先在商品管理中维护商品。'}</div></div>`;
+    return;
+  }
+  if(type==='category'){
+    box.innerHTML=`<div class="form-group"><label>选择分类</label><select id="fn-link-value">
+      <option value="">请选择分类</option>
+      ${notificationCategoryOptions.map(c=>`<option value="${esc(c.id)}" ${String(value)===String(c.id)?'selected':''}>${esc(notificationCategoryLabel(c))}</option>`).join('')}
+    </select><div class="form-help">${notificationCategoryOptions.length?'用户点击通知后会进入对应分类。':'暂无可选分类，请先在分类管理中维护分类。'}</div></div>`;
+    return;
+  }
+  const labels={product:'商品 ID',category:'分类 ID',url:'外部链接 URL',order:'订单 ID'};
+  box.innerHTML=`<div class="form-group"><label>${labels[type]||'跳转目标'}</label><input id="fn-link-value" value="${esc(value)}" placeholder="${type==='url'?'https://example.com':'请输入对应 ID'}"></div>`;
+}
+async function saveNotification(id){
+  const title=$('#fn-title').value.trim();
+  if(!title){alert('请填写通知标题');return;}
+  const linkType=$('#fn-link-type').value;
+  const linkValue=$('#fn-link-value')?$('#fn-link-value').value.trim():'';
+  if(linkType!=='none'&&!linkValue){alert('请填写跳转目标');return;}
+  if(linkType==='url'&&linkValue&&!/^https?:\/\//i.test(linkValue)){alert('外部链接请填写以 http:// 或 https:// 开头的完整地址');return;}
+  const targetType=$('#fn-target').value;
+  const userId=$('#fn-user-id')?$('#fn-user-id').value.trim():'';
+  if(targetType==='user'&&!userId){alert('请填写指定用户 ID');return;}
+  const payload={title,content:$('#fn-content').value,type:$('#fn-type').value,target_type:targetType,user_id:userId,
+    link_type:linkType,link_value:linkValue,is_active:$('#fn-active').checked,publish_at:$('#fn-publish').value};
+  const method=id?'PUT':'POST';
+  const path=id?`/admin/notifications/${id}`:'/admin/notifications/';
+  try{await api(path,{method,body:JSON.stringify(payload)});closeModal();renderNotifications();}
+  catch(e){alert('保存失败：'+e.message);}
+}
+async function delNotification(id){
+  if(!confirm('确认停用这条通知？用户将不再看到它。'))return;
+  await api(`/admin/notifications/${id}`,{method:'DELETE'});
+  renderNotifications();
+}
 
 // ========== 用户管理 ==========
 let uPage=1,uKw='';
